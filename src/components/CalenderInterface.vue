@@ -2,16 +2,48 @@
 import { ref, computed } from 'vue'
 
 const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
-const i = ref(0)
-//needs way to figure out how many days in a month
+
 const months = ref([
   {
     name: 'January',
     days: 31,
     rows: 5,
     dates: [
-      31, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25,
-      26, 27, 28, 29, 30, 31, 1, 2, 3
+      { number: 31, events: [], dayIsInThisMonnth: false },
+      { number: 1, events: [], dayIsInThisMonnth: true },
+      { number: 2, events: [], dayIsInThisMonnth: true },
+      { number: 3, events: [], dayIsInThisMonnth: true },
+      { number: 4, events: [], dayIsInThisMonnth: true },
+      { number: 5, events: [], dayIsInThisMonnth: true },
+      { number: 6, events: [], dayIsInThisMonnth: true },
+      { number: 7, events: [], dayIsInThisMonnth: true },
+      { number: 8, events: [], dayIsInThisMonnth: true },
+      { number: 9, events: [], dayIsInThisMonnth: true },
+      { number: 10, events: [], dayIsInThisMonnth: true },
+      { number: 11, events: [], dayIsInThisMonnth: true },
+      { number: 12, events: [], dayIsInThisMonnth: true },
+      { number: 13, events: [], dayIsInThisMonnth: true },
+      { number: 14, events: [], dayIsInThisMonnth: true },
+      { number: 15, events: [], dayIsInThisMonnth: true },
+      { number: 16, events: [], dayIsInThisMonnth: true },
+      { number: 17, events: [], dayIsInThisMonnth: true },
+      { number: 18, events: [], dayIsInThisMonnth: true },
+      { number: 19, events: [], dayIsInThisMonnth: true },
+      { number: 20, events: [], dayIsInThisMonnth: true },
+      { number: 21, events: [], dayIsInThisMonnth: true },
+      { number: 22, events: [], dayIsInThisMonnth: true },
+      { number: 23, events: [], dayIsInThisMonnth: true },
+      { number: 24, events: [], dayIsInThisMonnth: true },
+      { number: 25, events: [], dayIsInThisMonnth: true },
+      { number: 26, events: [], dayIsInThisMonnth: true },
+      { number: 27, events: [], dayIsInThisMonnth: true },
+      { number: 28, events: [], dayIsInThisMonnth: true },
+      { number: 29, events: [], dayIsInThisMonnth: true },
+      { number: 30, events: [], dayIsInThisMonnth: true },
+      { number: 31, events: [], dayIsInThisMonnth: true },
+      { number: 1, events: [], dayIsInThisMonnth: false },
+      { number: 2, events: [], dayIsInThisMonnth: false },
+      { number: 3, events: [], dayIsInThisMonnth: false }
     ]
   },
   {
@@ -19,8 +51,41 @@ const months = ref([
     days: 29,
     rows: 5,
     dates: [
-      28, 29, 30, 31, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22,
-      23, 24, 25, 26, 27, 28, 29, 1, 2
+      { number: 28, events: [], dayIsInThisMonnth: false },
+      { number: 29, events: [], dayIsInThisMonnth: false },
+      { number: 30, events: [], dayIsInThisMonnth: false },
+      { number: 31, events: [], dayIsInThisMonnth: false },
+      { number: 1, events: [], dayIsInThisMonnth: true },
+      { number: 2, events: [], dayIsInThisMonnth: true },
+      { number: 3, events: [], dayIsInThisMonnth: true },
+      { number: 4, events: [], dayIsInThisMonnth: true },
+      { number: 5, events: [], dayIsInThisMonnth: true },
+      { number: 6, events: [], dayIsInThisMonnth: true },
+      { number: 7, events: [], dayIsInThisMonnth: true },
+      { number: 8, events: [], dayIsInThisMonnth: true },
+      { number: 9, events: [], dayIsInThisMonnth: true },
+      { number: 10, events: [], dayIsInThisMonnth: true },
+      { number: 11, events: [], dayIsInThisMonnth: true },
+      { number: 12, events: [], dayIsInThisMonnth: true },
+      { number: 13, events: [], dayIsInThisMonnth: true },
+      { number: 14, events: [], dayIsInThisMonnth: true },
+      { number: 15, events: [], dayIsInThisMonnth: true },
+      { number: 16, events: [], dayIsInThisMonnth: true },
+      { number: 17, events: [], dayIsInThisMonnth: true },
+      { number: 18, events: [], dayIsInThisMonnth: true },
+      { number: 19, events: [], dayIsInThisMonnth: true },
+      { number: 20, events: [], dayIsInThisMonnth: true },
+      { number: 21, events: [], dayIsInThisMonnth: true },
+      { number: 22, events: [], dayIsInThisMonnth: true },
+      { number: 23, events: [], dayIsInThisMonnth: true },
+      { number: 24, events: [], dayIsInThisMonnth: true },
+      { number: 25, events: [], dayIsInThisMonnth: true },
+      { number: 26, events: [], dayIsInThisMonnth: true },
+      { number: 27, events: [], dayIsInThisMonnth: true },
+      { number: 28, events: [], dayIsInThisMonnth: true },
+      { number: 29, events: [], dayIsInThisMonnth: true },
+      { number: 1, events: [], dayIsInThisMonnth: false },
+      { number: 2, events: [], dayIsInThisMonnth: false }
     ]
   },
   {
@@ -28,8 +93,48 @@ const months = ref([
     days: 31,
     rows: 6,
     dates: [
-      25, 26, 27, 28, 29, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21,
-      22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 1, 2, 3, 4, 5, 6
+      { number: 25, events: [], dayIsInThisMonnth: false },
+      { number: 26, events: [], dayIsInThisMonnth: false },
+      { number: 27, events: [], dayIsInThisMonnth: false },
+      { number: 28, events: [], dayIsInThisMonnth: false },
+      { number: 29, events: [], dayIsInThisMonnth: false },
+      { number: 1, events: [], dayIsInThisMonnth: true },
+      { number: 2, events: [], dayIsInThisMonnth: true },
+      { number: 3, events: [], dayIsInThisMonnth: true },
+      { number: 4, events: [], dayIsInThisMonnth: true },
+      { number: 5, events: [], dayIsInThisMonnth: true },
+      { number: 6, events: [], dayIsInThisMonnth: true },
+      { number: 7, events: [], dayIsInThisMonnth: true },
+      { number: 8, events: [], dayIsInThisMonnth: true },
+      { number: 9, events: [], dayIsInThisMonnth: true },
+      { number: 10, events: [], dayIsInThisMonnth: true },
+      { number: 11, events: [], dayIsInThisMonnth: true },
+      { number: 12, events: [], dayIsInThisMonnth: true },
+      { number: 13, events: [], dayIsInThisMonnth: true },
+      { number: 14, events: [], dayIsInThisMonnth: true },
+      { number: 15, events: [], dayIsInThisMonnth: true },
+      { number: 16, events: [], dayIsInThisMonnth: true },
+      { number: 17, events: [], dayIsInThisMonnth: true },
+      { number: 18, events: [], dayIsInThisMonnth: true },
+      { number: 19, events: [], dayIsInThisMonnth: true },
+      { number: 20, events: [], dayIsInThisMonnth: true },
+      { number: 21, events: [], dayIsInThisMonnth: true },
+      { number: 22, events: [], dayIsInThisMonnth: true },
+      { number: 23, events: [], dayIsInThisMonnth: true },
+      { number: 24, events: [], dayIsInThisMonnth: true },
+      { number: 25, events: [], dayIsInThisMonnth: true },
+      { number: 26, events: [], dayIsInThisMonnth: true },
+      { number: 27, events: [], dayIsInThisMonnth: true },
+      { number: 28, events: [], dayIsInThisMonnth: true },
+      { number: 29, events: [], dayIsInThisMonnth: true },
+      { number: 30, events: [], dayIsInThisMonnth: true },
+      { number: 31, events: [], dayIsInThisMonnth: true },
+      { number: 1, events: [], dayIsInThisMonnth: false },
+      { number: 2, events: [], dayIsInThisMonnth: false },
+      { number: 3, events: [], dayIsInThisMonnth: false },
+      { number: 4, events: [], dayIsInThisMonnth: false },
+      { number: 5, events: [], dayIsInThisMonnth: false },
+      { number: 6, events: [], dayIsInThisMonnth: false }
     ]
   },
   {
@@ -37,8 +142,41 @@ const months = ref([
     days: 30,
     rows: 5,
     dates: [
-      31, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25,
-      26, 27, 28, 29, 30, 1, 2, 3, 4
+      { number: 31, events: [], dayIsInThisMonnth: false },
+      { number: 1, events: [], dayIsInThisMonnth: true },
+      { number: 2, events: [], dayIsInThisMonnth: true },
+      { number: 3, events: [], dayIsInThisMonnth: true },
+      { number: 4, events: [], dayIsInThisMonnth: true },
+      { number: 5, events: [], dayIsInThisMonnth: true },
+      { number: 6, events: [], dayIsInThisMonnth: true },
+      { number: 7, events: [], dayIsInThisMonnth: true },
+      { number: 8, events: [], dayIsInThisMonnth: true },
+      { number: 9, events: [], dayIsInThisMonnth: true },
+      { number: 10, events: [], dayIsInThisMonnth: true },
+      { number: 11, events: [], dayIsInThisMonnth: true },
+      { number: 12, events: [], dayIsInThisMonnth: true },
+      { number: 13, events: [], dayIsInThisMonnth: true },
+      { number: 14, events: [], dayIsInThisMonnth: true },
+      { number: 15, events: [], dayIsInThisMonnth: true },
+      { number: 16, events: [], dayIsInThisMonnth: true },
+      { number: 17, events: [], dayIsInThisMonnth: true },
+      { number: 18, events: [], dayIsInThisMonnth: true },
+      { number: 19, events: [], dayIsInThisMonnth: true },
+      { number: 20, events: [], dayIsInThisMonnth: true },
+      { number: 21, events: [], dayIsInThisMonnth: true },
+      { number: 22, events: [], dayIsInThisMonnth: true },
+      { number: 23, events: [], dayIsInThisMonnth: true },
+      { number: 24, events: [], dayIsInThisMonnth: true },
+      { number: 25, events: [], dayIsInThisMonnth: true },
+      { number: 26, events: [], dayIsInThisMonnth: true },
+      { number: 27, events: [], dayIsInThisMonnth: true },
+      { number: 28, events: [], dayIsInThisMonnth: true },
+      { number: 29, events: [], dayIsInThisMonnth: true },
+      { number: 30, events: [], dayIsInThisMonnth: true },
+      { number: 1, events: [], dayIsInThisMonnth: false },
+      { number: 2, events: [], dayIsInThisMonnth: false },
+      { number: 3, events: [], dayIsInThisMonnth: false },
+      { number: 4, events: [], dayIsInThisMonnth: false }
     ]
   },
   {
@@ -46,8 +184,41 @@ const months = ref([
     days: 31,
     rows: 5,
     dates: [
-      28, 29, 30, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23,
-      24, 25, 26, 27, 28, 29, 30, 31, 1
+      { number: 28, events: [], dayIsInThisMonnth: false },
+      { number: 29, events: [], dayIsInThisMonnth: false },
+      { number: 30, events: [], dayIsInThisMonnth: false },
+      { number: 1, events: [], dayIsInThisMonnth: true },
+      { number: 2, events: [], dayIsInThisMonnth: true },
+      { number: 3, events: [], dayIsInThisMonnth: true },
+      { number: 4, events: [], dayIsInThisMonnth: true },
+      { number: 5, events: [], dayIsInThisMonnth: true },
+      { number: 6, events: [], dayIsInThisMonnth: true },
+      { number: 7, events: [], dayIsInThisMonnth: true },
+      { number: 8, events: [], dayIsInThisMonnth: true },
+      { number: 9, events: [], dayIsInThisMonnth: true },
+      { number: 10, events: [], dayIsInThisMonnth: true },
+      { number: 11, events: [], dayIsInThisMonnth: true },
+      { number: 12, events: [], dayIsInThisMonnth: true },
+      { number: 13, events: [], dayIsInThisMonnth: true },
+      { number: 14, events: [], dayIsInThisMonnth: true },
+      { number: 15, events: [], dayIsInThisMonnth: true },
+      { number: 16, events: [], dayIsInThisMonnth: true },
+      { number: 17, events: [], dayIsInThisMonnth: true },
+      { number: 18, events: [], dayIsInThisMonnth: true },
+      { number: 19, events: [], dayIsInThisMonnth: true },
+      { number: 20, events: [], dayIsInThisMonnth: true },
+      { number: 21, events: [], dayIsInThisMonnth: true },
+      { number: 22, events: [], dayIsInThisMonnth: true },
+      { number: 23, events: [], dayIsInThisMonnth: true },
+      { number: 24, events: [], dayIsInThisMonnth: true },
+      { number: 25, events: [], dayIsInThisMonnth: true },
+      { number: 26, events: [], dayIsInThisMonnth: true },
+      { number: 27, events: [], dayIsInThisMonnth: true },
+      { number: 28, events: [], dayIsInThisMonnth: true },
+      { number: 29, events: [], dayIsInThisMonnth: true },
+      { number: 30, events: [], dayIsInThisMonnth: true },
+      { number: 31, events: [], dayIsInThisMonnth: true },
+      { number: 1, events: [], dayIsInThisMonnth: false }
     ]
   },
   {
@@ -55,8 +226,48 @@ const months = ref([
     days: 30,
     rows: 6,
     dates: [
-      26, 27, 28, 29, 30, 31, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
-      21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 1, 2, 3, 4, 5, 6
+      { number: 26, events: [], dayIsInThisMonnth: false },
+      { number: 27, events: [], dayIsInThisMonnth: false },
+      { number: 28, events: [], dayIsInThisMonnth: false },
+      { number: 29, events: [], dayIsInThisMonnth: false },
+      { number: 30, events: [], dayIsInThisMonnth: false },
+      { number: 31, events: [], dayIsInThisMonnth: false },
+      { number: 1, events: [], dayIsInThisMonnth: true },
+      { number: 2, events: [], dayIsInThisMonnth: true },
+      { number: 3, events: [], dayIsInThisMonnth: true },
+      { number: 4, events: [], dayIsInThisMonnth: true },
+      { number: 5, events: [], dayIsInThisMonnth: true },
+      { number: 6, events: [], dayIsInThisMonnth: true },
+      { number: 7, events: [], dayIsInThisMonnth: true },
+      { number: 8, events: [], dayIsInThisMonnth: true },
+      { number: 9, events: [], dayIsInThisMonnth: true },
+      { number: 10, events: [], dayIsInThisMonnth: true },
+      { number: 11, events: [], dayIsInThisMonnth: true },
+      { number: 12, events: [], dayIsInThisMonnth: true },
+      { number: 13, events: [], dayIsInThisMonnth: true },
+      { number: 14, events: [], dayIsInThisMonnth: true },
+      { number: 15, events: [], dayIsInThisMonnth: true },
+      { number: 16, events: [], dayIsInThisMonnth: true },
+      { number: 17, events: [], dayIsInThisMonnth: true },
+      { number: 18, events: [], dayIsInThisMonnth: true },
+      { number: 19, events: [], dayIsInThisMonnth: true },
+      { number: 20, events: [], dayIsInThisMonnth: true },
+      { number: 21, events: [], dayIsInThisMonnth: true },
+      { number: 22, events: [], dayIsInThisMonnth: true },
+      { number: 23, events: [], dayIsInThisMonnth: true },
+      { number: 24, events: [], dayIsInThisMonnth: true },
+      { number: 25, events: [], dayIsInThisMonnth: true },
+      { number: 26, events: [], dayIsInThisMonnth: true },
+      { number: 27, events: [], dayIsInThisMonnth: true },
+      { number: 28, events: [], dayIsInThisMonnth: true },
+      { number: 29, events: [], dayIsInThisMonnth: true },
+      { number: 30, events: [], dayIsInThisMonnth: true },
+      { number: 1, events: [], dayIsInThisMonnth: false },
+      { number: 2, events: [], dayIsInThisMonnth: false },
+      { number: 3, events: [], dayIsInThisMonnth: false },
+      { number: 4, events: [], dayIsInThisMonnth: false },
+      { number: 5, events: [], dayIsInThisMonnth: false },
+      { number: 6, events: [], dayIsInThisMonnth: false }
     ]
   },
   {
@@ -64,8 +275,42 @@ const months = ref([
     days: 31,
     rows: 5,
     dates: [
-      30, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25,
-      26, 27, 28, 29, 30, 31, 1, 2, 3
+      { number: 30, events: [], dayIsInThisMonnth: false },
+      { number: 31, events: [], dayIsInThisMonnth: false },
+      { number: 1, events: [], dayIsInThisMonnth: true },
+      { number: 2, events: [], dayIsInThisMonnth: true },
+      { number: 3, events: [], dayIsInThisMonnth: true },
+      { number: 4, events: [], dayIsInThisMonnth: true },
+      { number: 5, events: [], dayIsInThisMonnth: true },
+      { number: 6, events: [], dayIsInThisMonnth: true },
+      { number: 7, events: [], dayIsInThisMonnth: true },
+      { number: 8, events: [], dayIsInThisMonnth: true },
+      { number: 9, events: [], dayIsInThisMonnth: true },
+      { number: 10, events: [], dayIsInThisMonnth: true },
+      { number: 11, events: [], dayIsInThisMonnth: true },
+      { number: 12, events: [], dayIsInThisMonnth: true },
+      { number: 13, events: [], dayIsInThisMonnth: true },
+      { number: 14, events: [], dayIsInThisMonnth: true },
+      { number: 15, events: [], dayIsInThisMonnth: true },
+      { number: 16, events: [], dayIsInThisMonnth: true },
+      { number: 17, events: [], dayIsInThisMonnth: true },
+      { number: 18, events: [], dayIsInThisMonnth: true },
+      { number: 19, events: [], dayIsInThisMonnth: true },
+      { number: 20, events: [], dayIsInThisMonnth: true },
+      { number: 21, events: [], dayIsInThisMonnth: true },
+      { number: 22, events: [], dayIsInThisMonnth: true },
+      { number: 23, events: [], dayIsInThisMonnth: true },
+      { number: 24, events: [], dayIsInThisMonnth: true },
+      { number: 25, events: [], dayIsInThisMonnth: true },
+      { number: 26, events: [], dayIsInThisMonnth: true },
+      { number: 27, events: [], dayIsInThisMonnth: true },
+      { number: 28, events: [], dayIsInThisMonnth: true },
+      { number: 29, events: [], dayIsInThisMonnth: true },
+      { number: 30, events: [], dayIsInThisMonnth: true },
+      { number: 31, events: [], dayIsInThisMonnth: true },
+      { number: 1, events: [], dayIsInThisMonnth: false },
+      { number: 2, events: [], dayIsInThisMonnth: false },
+      { number: 3, events: [], dayIsInThisMonnth: false }
     ]
   },
   {
@@ -73,8 +318,44 @@ const months = ref([
     days: 31,
     rows: 5,
     dates: [
-      28, 29, 30, 31, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22,
-      23, 24, 25, 26, 27, 28, 29, 30, 31
+      { number: 28, events: [], dayIsInThisMonnth: false },
+      { number: 29, events: [], dayIsInThisMonnth: false },
+      { number: 30, events: [], dayIsInThisMonnth: false },
+      { number: 31, events: [], dayIsInThisMonnth: false },
+      { number: 1, events: [], dayIsInThisMonnth: true },
+      { number: 2, events: [], dayIsInThisMonnth: true },
+      { number: 3, events: [], dayIsInThisMonnth: true },
+      { number: 4, events: [], dayIsInThisMonnth: true },
+      { number: 5, events: [], dayIsInThisMonnth: true },
+      { number: 6, events: [], dayIsInThisMonnth: true },
+      { number: 7, events: [], dayIsInThisMonnth: true },
+      { number: 8, events: [], dayIsInThisMonnth: true },
+      { number: 9, events: [], dayIsInThisMonnth: true },
+      { number: 10, events: [], dayIsInThisMonnth: true },
+      { number: 11, events: [], dayIsInThisMonnth: true },
+      { number: 12, events: [], dayIsInThisMonnth: true },
+      { number: 13, events: [], dayIsInThisMonnth: true },
+      { number: 14, events: [], dayIsInThisMonnth: true },
+      { number: 15, events: [], dayIsInThisMonnth: true },
+      { number: 16, events: [], dayIsInThisMonnth: true },
+      { number: 17, events: [], dayIsInThisMonnth: true },
+      { number: 18, events: [], dayIsInThisMonnth: true },
+      { number: 19, events: [], dayIsInThisMonnth: true },
+      { number: 20, events: [], dayIsInThisMonnth: true },
+      { number: 21, events: [], dayIsInThisMonnth: true },
+      { number: 22, events: [], dayIsInThisMonnth: true },
+      { number: 23, events: [], dayIsInThisMonnth: true },
+      { number: 24, events: [], dayIsInThisMonnth: true },
+      { number: 25, events: [{ id: 1, name: 'Pouyan Birthday' }], dayIsInThisMonnth: true },
+      { number: 26, events: [], dayIsInThisMonnth: true },
+      { number: 27, events: [], dayIsInThisMonnth: true },
+      { number: 28, events: [], dayIsInThisMonnth: true },
+      { number: 29, events: [], dayIsInThisMonnth: true },
+      { number: 30, events: [], dayIsInThisMonnth: true },
+      { number: 31, events: [], dayIsInThisMonnth: true },
+      { number: 1, events: [], dayIsInThisMonnth: false },
+      { number: 2, events: [], dayIsInThisMonnth: false },
+      { number: 3, events: [], dayIsInThisMonnth: false }
     ]
   },
   {
@@ -82,8 +363,41 @@ const months = ref([
     days: 30,
     rows: 5,
     dates: [
-      1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26,
-      27, 28, 29, 30, 1, 2, 3, 4, 5
+      { number: 1, events: [], dayIsInThisMonnth: true },
+      { number: 2, events: [], dayIsInThisMonnth: true },
+      { number: 3, events: [], dayIsInThisMonnth: true },
+      { number: 4, events: [], dayIsInThisMonnth: true },
+      { number: 5, events: [], dayIsInThisMonnth: true },
+      { number: 6, events: [], dayIsInThisMonnth: true },
+      { number: 7, events: [], dayIsInThisMonnth: true },
+      { number: 8, events: [], dayIsInThisMonnth: true },
+      { number: 9, events: [], dayIsInThisMonnth: true },
+      { number: 10, events: [], dayIsInThisMonnth: true },
+      { number: 11, events: [], dayIsInThisMonnth: true },
+      { number: 12, events: [], dayIsInThisMonnth: true },
+      { number: 13, events: [], dayIsInThisMonnth: true },
+      { number: 14, events: [], dayIsInThisMonnth: true },
+      { number: 15, events: [], dayIsInThisMonnth: true },
+      { number: 16, events: [], dayIsInThisMonnth: true },
+      { number: 17, events: [], dayIsInThisMonnth: true },
+      { number: 18, events: [], dayIsInThisMonnth: true },
+      { number: 19, events: [], dayIsInThisMonnth: true },
+      { number: 20, events: [], dayIsInThisMonnth: true },
+      { number: 21, events: [], dayIsInThisMonnth: true },
+      { number: 22, events: [], dayIsInThisMonnth: true },
+      { number: 23, events: [], dayIsInThisMonnth: true },
+      { number: 24, events: [], dayIsInThisMonnth: true },
+      { number: 25, events: [], dayIsInThisMonnth: true },
+      { number: 26, events: [], dayIsInThisMonnth: true },
+      { number: 27, events: [], dayIsInThisMonnth: true },
+      { number: 28, events: [], dayIsInThisMonnth: true },
+      { number: 29, events: [], dayIsInThisMonnth: true },
+      { number: 30, events: [], dayIsInThisMonnth: true },
+      { number: 1, events: [], dayIsInThisMonnth: false },
+      { number: 2, events: [], dayIsInThisMonnth: false },
+      { number: 3, events: [], dayIsInThisMonnth: false },
+      { number: 4, events: [], dayIsInThisMonnth: false },
+      { number: 5, events: [], dayIsInThisMonnth: false }
     ]
   },
   {
@@ -91,8 +405,41 @@ const months = ref([
     days: 31,
     rows: 5,
     dates: [
-      29, 30, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24,
-      25, 26, 27, 28, 29, 30, 31, 1, 2
+      { number: 29, events: [], dayIsInThisMonnth: false },
+      { number: 30, events: [], dayIsInThisMonnth: false },
+      { number: 1, events: [], dayIsInThisMonnth: true },
+      { number: 2, events: [], dayIsInThisMonnth: true },
+      { number: 3, events: [], dayIsInThisMonnth: true },
+      { number: 4, events: [], dayIsInThisMonnth: true },
+      { number: 5, events: [], dayIsInThisMonnth: true },
+      { number: 6, events: [], dayIsInThisMonnth: true },
+      { number: 7, events: [], dayIsInThisMonnth: true },
+      { number: 8, events: [], dayIsInThisMonnth: true },
+      { number: 9, events: [], dayIsInThisMonnth: true },
+      { number: 10, events: [], dayIsInThisMonnth: true },
+      { number: 11, events: [], dayIsInThisMonnth: true },
+      { number: 12, events: [], dayIsInThisMonnth: true },
+      { number: 13, events: [], dayIsInThisMonnth: true },
+      { number: 14, events: [], dayIsInThisMonnth: true },
+      { number: 15, events: [], dayIsInThisMonnth: true },
+      { number: 16, events: [], dayIsInThisMonnth: true },
+      { number: 17, events: [], dayIsInThisMonnth: true },
+      { number: 18, events: [], dayIsInThisMonnth: true },
+      { number: 19, events: [], dayIsInThisMonnth: true },
+      { number: 20, events: [], dayIsInThisMonnth: true },
+      { number: 21, events: [], dayIsInThisMonnth: true },
+      { number: 22, events: [], dayIsInThisMonnth: true },
+      { number: 23, events: [], dayIsInThisMonnth: true },
+      { number: 24, events: [], dayIsInThisMonnth: true },
+      { number: 25, events: [], dayIsInThisMonnth: true },
+      { number: 26, events: [], dayIsInThisMonnth: true },
+      { number: 27, events: [], dayIsInThisMonnth: true },
+      { number: 28, events: [], dayIsInThisMonnth: true },
+      { number: 29, events: [], dayIsInThisMonnth: true },
+      { number: 30, events: [], dayIsInThisMonnth: true },
+      { number: 31, events: [], dayIsInThisMonnth: true },
+      { number: 1, events: [], dayIsInThisMonnth: false },
+      { number: 2, events: [], dayIsInThisMonnth: false }
     ]
   },
   {
@@ -100,8 +447,41 @@ const months = ref([
     days: 30,
     rows: 5,
     dates: [
-      27, 28, 29, 30, 31, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21,
-      22, 23, 24, 25, 26, 27, 28, 29, 30
+      { number: 27, events: [], dayIsInThisMonnth: false },
+      { number: 28, events: [], dayIsInThisMonnth: false },
+      { number: 29, events: [], dayIsInThisMonnth: false },
+      { number: 30, events: [], dayIsInThisMonnth: false },
+      { number: 31, events: [], dayIsInThisMonnth: false },
+      { number: 1, events: [], dayIsInThisMonnth: true },
+      { number: 2, events: [], dayIsInThisMonnth: true },
+      { number: 3, events: [], dayIsInThisMonnth: true },
+      { number: 4, events: [], dayIsInThisMonnth: true },
+      { number: 5, events: [], dayIsInThisMonnth: true },
+      { number: 6, events: [], dayIsInThisMonnth: true },
+      { number: 7, events: [], dayIsInThisMonnth: true },
+      { number: 8, events: [], dayIsInThisMonnth: true },
+      { number: 9, events: [], dayIsInThisMonnth: true },
+      { number: 10, events: [], dayIsInThisMonnth: true },
+      { number: 11, events: [], dayIsInThisMonnth: true },
+      { number: 12, events: [], dayIsInThisMonnth: true },
+      { number: 13, events: [], dayIsInThisMonnth: true },
+      { number: 14, events: [], dayIsInThisMonnth: true },
+      { number: 15, events: [], dayIsInThisMonnth: true },
+      { number: 16, events: [], dayIsInThisMonnth: true },
+      { number: 17, events: [], dayIsInThisMonnth: true },
+      { number: 18, events: [], dayIsInThisMonnth: true },
+      { number: 19, events: [], dayIsInThisMonnth: true },
+      { number: 20, events: [], dayIsInThisMonnth: true },
+      { number: 21, events: [], dayIsInThisMonnth: true },
+      { number: 22, events: [], dayIsInThisMonnth: true },
+      { number: 23, events: [], dayIsInThisMonnth: true },
+      { number: 24, events: [], dayIsInThisMonnth: true },
+      { number: 25, events: [], dayIsInThisMonnth: true },
+      { number: 26, events: [], dayIsInThisMonnth: true },
+      { number: 27, events: [], dayIsInThisMonnth: true },
+      { number: 28, events: [], dayIsInThisMonnth: true },
+      { number: 29, events: [], dayIsInThisMonnth: true },
+      { number: 30, events: [], dayIsInThisMonnth: true }
     ]
   },
   {
@@ -109,11 +489,46 @@ const months = ref([
     days: 31,
     rows: 5,
     dates: [
-      1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26,
-      27, 28, 29, 30, 31, 1, 2, 3, 4
+      { number: 1, events: [], dayIsInThisMonnth: true },
+      { number: 2, events: [], dayIsInThisMonnth: true },
+      { number: 3, events: [], dayIsInThisMonnth: true },
+      { number: 4, events: [], dayIsInThisMonnth: true },
+      { number: 5, events: [], dayIsInThisMonnth: true },
+      { number: 6, events: [], dayIsInThisMonnth: true },
+      { number: 7, events: [], dayIsInThisMonnth: true },
+      { number: 8, events: [], dayIsInThisMonnth: true },
+      { number: 9, events: [], dayIsInThisMonnth: true },
+      { number: 10, events: [], dayIsInThisMonnth: true },
+      { number: 11, events: [], dayIsInThisMonnth: true },
+      { number: 12, events: [], dayIsInThisMonnth: true },
+      { number: 13, events: [], dayIsInThisMonnth: true },
+      { number: 14, events: [], dayIsInThisMonnth: true },
+      { number: 15, events: [], dayIsInThisMonnth: true },
+      { number: 16, events: [], dayIsInThisMonnth: true },
+      { number: 17, events: [], dayIsInThisMonnth: true },
+      { number: 18, events: [], dayIsInThisMonnth: true },
+      { number: 19, events: [], dayIsInThisMonnth: true },
+      { number: 20, events: [], dayIsInThisMonnth: true },
+      { number: 21, events: [], dayIsInThisMonnth: true },
+      { number: 22, events: [], dayIsInThisMonnth: true },
+      { number: 23, events: [], dayIsInThisMonnth: true },
+      { number: 24, events: [], dayIsInThisMonnth: true },
+      { number: 25, events: [], dayIsInThisMonnth: true },
+      { number: 26, events: [], dayIsInThisMonnth: true },
+      { number: 27, events: [], dayIsInThisMonnth: true },
+      { number: 28, events: [], dayIsInThisMonnth: true },
+      { number: 29, events: [], dayIsInThisMonnth: true },
+      { number: 30, events: [], dayIsInThisMonnth: true },
+      { number: 31, events: [], dayIsInThisMonnth: true },
+      { number: 1, events: [], dayIsInThisMonnth: false },
+      { number: 2, events: [], dayIsInThisMonnth: false },
+      { number: 3, events: [], dayIsInThisMonnth: false },
+      { number: 4, events: [], dayIsInThisMonnth: false }
     ]
   }
 ])
+
+const daySelected = ref(new Date().getDate())
 
 const currentMonth = ref(new Date().getMonth())
 const getMonth = computed(() => months.value[currentMonth.value])
@@ -123,9 +538,14 @@ function getCellValue(row, column) {
 function changeMonth(direction) {
   if (direction === 'next' && currentMonth.value < 11) {
     currentMonth.value++
+    daySelected.value = 1
   } else if (direction === 'perv' && currentMonth.value > 0) {
     currentMonth.value--
+    daySelected.value = 1
   }
+}
+const getEventsForADay = (day) => {
+  return getMonth.value.dates[day].events
 }
 </script>
 
@@ -144,7 +564,25 @@ function changeMonth(direction) {
     </thead>
     <tbody>
       <tr v-for="n in getMonth.rows" :key="n">
-        <td v-for="m in 7" :key="m">{{ getMonth.dates[getCellValue(n, m)] }}</td>
+        <td
+          v-for="m in 7"
+          :key="m"
+          :class="{
+            thisMonth: getMonth.dates[getCellValue(n, m)].dayIsInThisMonnth,
+            notThisMonth: !getMonth.dates[getCellValue(n, m)].dayIsInThisMonnth,
+            selected:
+              getMonth.dates[getCellValue(n, m)].number === daySelected &&
+              getMonth.dates[getCellValue(n, m)].dayIsInThisMonnth
+          }"
+          @click="daySelected = getMonth.dates[getCellValue(n, m)].number"
+        >
+          {{ getMonth.dates[getCellValue(n, m)].number }}
+          <div v-if="getMonth.dates[getCellValue(n, m)].events.length > 0">
+            <div v-for="event in getEventsForADay(getCellValue(n, m))" :key="event.id">
+              {{ event.name }}
+            </div>
+          </div>
+        </td>
       </tr>
     </tbody>
   </table>
@@ -156,12 +594,30 @@ function changeMonth(direction) {
   justify-content: space-between;
   align-items: center;
 }
+
 .monthName {
   display: inline;
 }
+
+.notThisMonth {
+  background-color: lightgray;
+}
+
+.thisMonth {
+  background-color: white;
+}
+
+.thisMonth:hover {
+  background-color: lightblue;
+}
+
+.selected {
+  background-color: lightgreen;
+}
+
 .table {
   width: 100%;
-  height: 100%;
+  height: 85%;
   border-collapse: collapse;
 }
 
@@ -169,5 +625,7 @@ th,
 td {
   border: 1px solid black;
   padding: 10px;
+  width: 14.28%;
+  text-align: center;
 }
 </style>
