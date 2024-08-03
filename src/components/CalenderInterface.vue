@@ -1,7 +1,7 @@
 <script setup>
-import { ref, computed } from 'vue'
+import { computed, ref } from 'vue'
 
-const props = defineProps(['months', 'daySelected', 'currentMonth'])
+const props = defineProps(['months', 'daySelected', 'currentMonth', 'currentDayIndex', 'countries'])
 const emit = defineEmits(['changeMonth', 'changeDay'])
 
 const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
@@ -13,7 +13,15 @@ function getCellValue(row, column) {
 }
 
 const getEventsForADay = (day) => {
-  return getMonth.value.dates[day].events
+  let events = []
+  let dayInfo = getMonth.value.dates[day]
+  for (let i = 0; i < dayInfo.events.length; i++) {
+    if (props.countries[dayInfo.events[i].country].selected) {
+      events.push(dayInfo.events[i])
+    }
+  }
+
+  return events
 }
 </script>
 
@@ -36,17 +44,27 @@ const getEventsForADay = (day) => {
           v-for="m in 7"
           :key="m"
           :class="{
-            thisMonth: getMonth.dates[getCellValue(n, m)].dayIsInThisMonnth,
-            notThisMonth: !getMonth.dates[getCellValue(n, m)].dayIsInThisMonnth,
+            thisMonth: getMonth.dates[getCellValue(n, m)].dayIsInThisMonth,
+            notThisMonth: !getMonth.dates[getCellValue(n, m)].dayIsInThisMonth,
             selected:
               getMonth.dates[getCellValue(n, m)].number === daySelected &&
-              getMonth.dates[getCellValue(n, m)].dayIsInThisMonnth
+              getMonth.dates[getCellValue(n, m)].dayIsInThisMonth
           }"
-          @click="emit('changeDay', getMonth.dates[getCellValue(n, m)].number)"
+          @click="
+            emit(
+              'changeDay',
+              getMonth.dates[getCellValue(n, m)].number,
+              getMonth.dates[getCellValue(n, m)].dayIsInThisMonth
+            )
+          "
         >
           {{ getMonth.dates[getCellValue(n, m)].number }}
           <div v-if="getMonth.dates[getCellValue(n, m)].events.length > 0">
-            <div v-for="event in getEventsForADay(getCellValue(n, m))" :key="event.id">
+            <div
+              v-for="event in getEventsForADay(getCellValue(n, m))"
+              class="event-name"
+              :key="event.id"
+            >
               {{ event.name }}
             </div>
           </div>
@@ -82,7 +100,11 @@ const getEventsForADay = (day) => {
 .selected {
   background-color: lightgreen;
 }
-
+.event-name {
+  background-color: lightcoral;
+  margin: 5px;
+  border-radius: 5px;
+}
 .table {
   width: 100%;
   height: 85%;
