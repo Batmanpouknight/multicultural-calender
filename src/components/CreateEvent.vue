@@ -20,6 +20,10 @@ const getCurrentDay = computed(() => {
   return getMonth.value.dates[props.daySelected + getOffSetOfMonth(getMonth.value)]
 })
 
+function handleMonthChange(event) {
+  emit('changeMonth', event.target.value)
+}
+
 const getEventsForSelectedDay = computed(() => {
   let events = []
   const currentDay = getCurrentDay.value
@@ -63,13 +67,12 @@ const getEventsForSelectedDay = computed(() => {
     </div>
 
     <div class="changeMonth">
-      <select name="month" id="month">
+      <select name="month" id="month" @change="handleMonthChange">
         <option
           v-for="(month, index) in months"
           :key="index"
           :value="index"
           :selected="index == props.currentMonth"
-          @click="$emit('changeMonth', index)"
         >
           {{ month.name }}
         </option>
