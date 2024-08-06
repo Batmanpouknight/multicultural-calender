@@ -1,20 +1,50 @@
 <script setup>
-import { computed, ref } from 'vue'
+import { computed } from 'vue'
 
-const props = defineProps(['months', 'daySelected', 'currentMonth', 'currentDayIndex', 'countries'])
+const props = defineProps(['months', 'daySelected', 'currentMonth', 'countries'])
 const emit = defineEmits(['changeMonth', 'changeDay'])
 
 const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
 
-const getMonth = computed(() => props.months[props.currentMonth])
+/**
+ * returns the month object based on the current month
+ * @returns {object} the month object
+ */
+const getMonthObject = computed(() => {
+  console.log(props.months)
+  return props.months[props.currentMonth]
+})
+
+/**
+ * returns the day object based on the row and column in the table
+ * @param {number} row in the table
+ * @param {number} column in the table
+ * @returns {object} the day object
+ */
+function getDayObject(row, column) {
+  return getMonthObject.value.dates[getCellValue(row, column)]
+}
+
+function isSelected(row, column) {
+  return (
+    getMonthObject.value.dates[getCellValue(row, column)].number === props.daySelected &&
+    getMonthObject.value.dates[getCellValue(row, column)].dayIsInThisMonth
+  )
+}
 
 function getCellValue(row, column) {
   return (row - 1) * 7 + column - 1
 }
 
-const getEventsForADay = (day) => {
+/**
+ * returns the events for a specific day based on the filetered countries
+ * @param {number} day the day to get the events for
+ * @returns {array} the events for the day
+ */
+function getEventsForADay(row, column) {
   let events = []
-  let dayInfo = getMonth.value.dates[day]
+  let day = getCellValue(row, column)
+  let dayInfo = getMonthObject.value.dates[day]
   for (let i = 0; i < dayInfo.events.length; i++) {
     if (props.countries[dayInfo.events[i].country].selected) {
       events.push(dayInfo.events[i])
@@ -27,9 +57,9 @@ const getEventsForADay = (day) => {
 
 <template>
   <div class="month">
-    <button @click="emit('changeMonth', 'perv')">Perv</button>
-    <h1 class="monthName">{{ getMonth.name }}</h1>
-    <button @click="emit('changeMonth', 'next')">Next</button>
+    <button @click="emit('changeMonth', props.currentMonth - 1)">Perv</button>
+    <h1 class="monthName">{{ getMonthObject.name }}</h1>
+    <button @click="emit('changeMonth', props.currentMonth + 1)">Next</button>
   </div>
 
   <table class="table">
@@ -39,32 +69,20 @@ const getEventsForADay = (day) => {
       </tr>
     </thead>
     <tbody>
-      <tr v-for="n in getMonth.rows" :key="n">
+      <tr v-for="row in getMonthObject.rows" :key="row">
         <td
-          v-for="m in 7"
-          :key="m"
+          v-for="column in 7"
+          :key="column"
           :class="{
-            thisMonth: getMonth.dates[getCellValue(n, m)].dayIsInThisMonth,
-            notThisMonth: !getMonth.dates[getCellValue(n, m)].dayIsInThisMonth,
-            selected:
-              getMonth.dates[getCellValue(n, m)].number === daySelected &&
-              getMonth.dates[getCellValue(n, m)].dayIsInThisMonth
+            thisMonth: getDayObject(row, column).dayIsInThisMonth,
+            notThisMonth: !getDayObject(row, column).dayIsInThisMonth,
+            selected: isSelected(row, column),
           }"
-          @click="
-            emit(
-              'changeDay',
-              getMonth.dates[getCellValue(n, m)].number,
-              getMonth.dates[getCellValue(n, m)].dayIsInThisMonth
-            )
-          "
+          @click="emit('changeDay', getDayObject(row, column))"
         >
-          {{ getMonth.dates[getCellValue(n, m)].number }}
-          <div v-if="getMonth.dates[getCellValue(n, m)].events.length > 0">
-            <div
-              v-for="event in getEventsForADay(getCellValue(n, m))"
-              class="event-name"
-              :key="event.id"
-            >
+          {{ getDayObject(row, column).number }}
+          <div v-if="getDayObject(row, column).events.length > 0">
+            <div v-for="event in getEventsForADay(row, column)" class="event-name" :key="event.id">
               {{ event.name }}
             </div>
           </div>
@@ -86,7 +104,7 @@ const getEventsForADay = (day) => {
 }
 
 .notThisMonth {
-  background-color: lightgray;
+  background-color: gray;
 }
 
 .thisMonth {
@@ -98,7 +116,7 @@ const getEventsForADay = (day) => {
 }
 
 .selected {
-  background-color: lightgreen;
+  background-color: lightgray;
 }
 .event-name {
   background-color: lightcoral;
@@ -114,8 +132,11 @@ const getEventsForADay = (day) => {
 th,
 td {
   border: 1px solid black;
-  padding: 10px;
+  height: 15%;
   width: 14.28%;
   text-align: center;
+}
+th {
+  background-color: lightgreen;
 }
 </style>
