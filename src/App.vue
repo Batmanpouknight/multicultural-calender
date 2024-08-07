@@ -51,7 +51,7 @@ onBeforeMount(async () => {
   <div id="container" v-if="months.length > 0">
     <div class="calender">
       <Calender
-        :months="months"
+        v-model:months="months"
         :daySelected="daySelected"
         :currentMonth="currentMonth"
         :countries="countries"

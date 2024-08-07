@@ -1,11 +1,16 @@
 <script setup>
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 
-const props = defineProps(['months', 'daySelected', 'currentMonth', 'countries'])
+const props = defineProps(['daySelected', 'currentMonth', 'countries'])
 const emit = defineEmits(['toggleCountry', 'changeMonth'])
+const months = defineModel('months')
+const nameError = ref(null)
+const descriptionError = ref(null)
+const countryError = ref(null)
+const dateError = ref(null)
 
 const getMonth = computed(() => {
-  return props.months[props.currentMonth]
+  return months.value[props.currentMonth]
 })
 
 function getOffSetOfMonth(month) {
@@ -34,6 +39,78 @@ const getEventsForSelectedDay = computed(() => {
   }
   return events
 })
+
+async function addEvent(event) {
+  const name = event.target['name-input'].value
+  const description = event.target['descriptionInput'].value
+  const country = event.target['selectCountry'].value
+  const month = event.target['month-input'].value
+  const dayNumber = event.target['day-input'].value
+  const dayIndex = Number(dayNumber) + getOffSetOfMonth(months.value[month])
+  const button = event.target.querySelector('button')
+  button.disabled = true
+
+  console.log(dayNumber, dayIndex)
+
+  nameError.value = null
+  descriptionError.value = null
+  countryError.value = null
+  dateError.value = null
+
+  let error = false
+  if (!name) {
+    nameError.value = 'Name is required'
+    error = true
+  }
+  if (!description) {
+    descriptionError.value = 'Description is required'
+    error = true
+  }
+  if (country == 'default') {
+    countryError.value = 'Country is required'
+    error = true
+  }
+  if (!(month >= 0 && month <= 11)) {
+    dateError.value = 'Invalid month'
+    error = true
+  }
+
+  if (dayNumber > months.value[month].days || dayNumber < 0) {
+    dateError.value = 'Invalid day'
+    error = true
+  }
+  if (error) {
+    button.disabled = false
+    return
+  }
+
+  try {
+    const id = await fetch('https://calender-database.onrender.com/api/addevent', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        name,
+        description,
+        country,
+        month,
+        dayIndex,
+      }),
+    })
+    button.disabled = false
+
+    months.value[month].dates[dayIndex].events.push({
+      id: id,
+      name,
+      description,
+      country,
+    })
+  } catch (error) {
+    console.error(error)
+    button.disabled = false
+  }
+}
 </script>
 
 <template>
@@ -83,20 +160,42 @@ const getEventsForSelectedDay = computed(() => {
     </div>
 
     <div class="new-event">
-      <form>
+      <form @submit.prevent="addEvent">
         <label for="name-input">Name: </label>
         <input type="text" class="name-input" name="name-input" />
+        <span v-if="nameError" class="error">{{ nameError }}</span>
         <br /><br />
+
+        <input type="number" name="day-input" class="day-input" :value="daySelected" />/
+        <select name="month-input" class="month-input">
+          <option
+            v-for="(month, index) in months"
+            :key="index"
+            :value="index"
+            :selected="index == props.currentMonth"
+          >
+            {{ month.name }}
+          </option>
+        </select>
+        <span v-if="dateError" class="error">{{ dateError }}</span>
+
+        <br /><br />
+
         <label for="descriptionInput">Description: </label>
         <textarea name="descriptionInput" id="descriptionInput"></textarea>
-        <!-- <input type="text" class="descriptionInput" name="descriptionInput" /> -->
+        <span v-if="descriptionError" class="error">{{ descriptionError }}</span>
+
         <br /><br />
+
+        <label for="selectCountry">Select Country: </label>
         <select name="selectCountry" id="selectCountry">
           <option value="default" selected disabled>Choose an option</option>
           <option v-for="(country, index) in countries" :key="index" :value="index">
             {{ country.name }}
           </option>
         </select>
+        <span v-if="countryError" class="error">{{ countryError }}</span>
+
         <br /><br />
 
         <button type="submit">Add Event</button>
@@ -116,5 +215,18 @@ const getEventsForSelectedDay = computed(() => {
 
 input[type='checkbox'].custom-checkbox {
   pointer-events: none;
+}
+
+.error {
+  color: red;
+}
+
+.day-input {
+  width: 35px;
+}
+
+.month-input {
+  width: 85px;
+  font-size: 12px;
 }
 </style>
