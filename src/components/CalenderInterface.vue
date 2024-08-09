@@ -1,10 +1,13 @@
 <script setup>
-import { computed, ref, reactive } from 'vue'
+import { computed, ref, reactive, onMounted } from 'vue'
 
 const props = defineProps(['months', 'daySelected', 'currentMonth', 'countries'])
 const emit = defineEmits(['changeMonth', 'changeDay'])
 
-const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
+const dayFullStrings = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
+const dayShortStrings = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+
+const days = ref(dayShortStrings)
 
 const showOverlay = ref(false)
 
@@ -88,6 +91,16 @@ function getEventsForADay(index) {
 
   return events
 }
+
+onMounted(() => {
+  if (window.innerWidth < 800) days.value = dayShortStrings
+  else days.value = dayFullStrings
+
+  window.addEventListener('resize', () => {
+    if (window.innerWidth < 800) days.value = dayShortStrings
+    else days.value = dayFullStrings
+  })
+})
 </script>
 
 <template>
@@ -223,8 +236,8 @@ function getEventsForADay(index) {
 
 .event-details {
   position: fixed;
-  height: 300px;
-  width: 300px;
+  height: 500px;
+  width: 500px;
   z-index: 1000;
   background-color: orange;
   top: 50%;
@@ -252,5 +265,12 @@ function getEventsForADay(index) {
 }
 .event-info {
   margin-top: 50px;
+}
+
+@media (max-width: 800px) {
+  .event-details {
+    height: 300px;
+    width: 300px;
+  }
 }
 </style>

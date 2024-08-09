@@ -54,13 +54,15 @@ onMounted(() => {
       mobileMode.value = true
       showSideBar.value = false
       sideBarStyle.value.position = 'absolute'
-      sideBarStyle.value.display = false
+      sideBarStyle.value.width = '0vw'
+      sideBarStyle.value.display = 'none'
       sideBarStyle.value.width = '50vw'
       calenderStyle.value.width = '100vw'
     } else {
       mobileMode.value = false
       showSideBar.value = true
       sideBarStyle.value.position = 'relative'
+      sideBarStyle.value.display = 'block'
       sideBarStyle.value.width = '20vw'
       calenderStyle.value.width = '80vw'
     }
