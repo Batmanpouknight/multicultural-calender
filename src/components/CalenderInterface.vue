@@ -104,13 +104,13 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="month">
+  <!-- <div class="month">
     <button @click="changeMonthButton(-1)">Prev</button>
     <h1 class="monthName" :class="animateCalender">
       {{ getCurrnetMonthObject.name }}
     </h1>
     <button @click="changeMonthButton(1)">Next</button>
-  </div>
+  </div> -->
 
   <div id="calender-grid" :style="{ 'grid-template-rows': `repeat(${getCurrnetMonthObject.rows}, ${itemHeight}%)` }" :class="animateCalender">
     <div
@@ -159,32 +159,6 @@ onMounted(() => {
   --animate-duration: 200ms;
 }
 
-.month {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  height: 10%;
-}
-
-.monthName {
-  display: inline;
-}
-
-.month > button {
-  height: 50%;
-  width: 10%;
-  border: none;
-  border-radius: 4px;
-  background-color: #4caf50;
-  color: white;
-  text-decoration: none;
-}
-
-.month > button:hover {
-  background-color: green;
-  cursor: pointer;
-}
-
 .calender-item.notThisMonth {
   background-color: gray;
   color: white;
@@ -221,7 +195,7 @@ onMounted(() => {
 #calender-grid {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
-  height: 90%;
+  height: 100%;
   width: 100%;
 }
 

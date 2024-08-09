@@ -24,23 +24,17 @@ const mobileMode = ref(false)
 
 const sideBarStyle = reactive({
   width: '20vw',
-  height: '100vh',
+  height: '92vh',
   'background-color': 'white',
-  order: 1,
+  order: 2,
   zIndex: 1,
 })
 
 const calenderStyle = reactive({
-  height: '99vh',
+  height: '92vh',
   width: '80vw',
-  order: 2,
+  order: 3,
   zIndex: 0,
-})
-
-const containerStyle = reactive({
-  display: 'flex',
-  position: 'relative',
-  justifyContent: 'flex-start',
 })
 
 function changeMonth(newMonth) {
@@ -73,13 +67,20 @@ onBeforeMount(async () => {
 })
 </script>
 <template>
-  <Header
-    v-model:showSideBar="showSideBar"
-    v-model:sideBarStyle="sideBarStyle"
-    v-model:calenderStyle="calenderStyle"
-    v-model:mobileMode="mobileMode"
-  />
-  <div id="container" v-if="months.length > 0" :style="containerStyle">
+  <div id="container" v-if="months.length > 0">
+    <div class="header">
+      <Header
+        v-if="months.length > 0"
+        v-model:showSideBar="showSideBar"
+        v-model:sideBarStyle="sideBarStyle"
+        v-model:calenderStyle="calenderStyle"
+        v-model:mobileMode="mobileMode"
+        :months="months"
+        :currentMonth="currentMonth"
+        @changeMonth="changeMonth"
+      />
+    </div>
+
     <div class="calender" :style="calenderStyle">
       <Calender
         v-model:months="months"
@@ -110,5 +111,22 @@ body {
   margin: 0;
   padding: 0;
   font-family: Arial, sans-serif;
+}
+
+#container {
+  display: flex;
+  position: relative;
+  justify-content: flex-start;
+  flex-wrap: wrap;
+}
+
+.header {
+  display: flex;
+  width: 100vw;
+  height: 8vh;
+  order: 1;
+  background-color: #f0f0f0;
+  justify-content: center;
+  align-items: center;
 }
 </style>
