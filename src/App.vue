@@ -1,5 +1,6 @@
 <script setup>
 import { ref, reactive, onBeforeMount } from 'vue'
+import Header from './components/AppHeader.vue'
 
 const months = ref([])
 
@@ -19,32 +20,28 @@ const daySelected = ref(new Date().getDate())
 const currentMonth = ref(new Date().getMonth())
 
 const showSideBar = ref(true)
+const mobileMode = ref(false)
 
 const sideBarStyle = reactive({
   width: '20vw',
-  height: '98vh',
+  height: '100vh',
+  'background-color': 'white',
   order: 1,
   zIndex: 1,
 })
 
 const calenderStyle = reactive({
-  height: '98vh',
+  height: '99vh',
   width: '80vw',
   order: 2,
   zIndex: 0,
 })
 
-function toggleSideBar() {
-  if (showSideBar.value) {
-    showSideBar.value = false
-    sideBarStyle.width = '5vw'
-    calenderStyle.width = '97vw'
-  } else {
-    showSideBar.value = true
-    sideBarStyle.width = '20vw'
-    calenderStyle.width = '80vw'
-  }
-}
+const containerStyle = reactive({
+  display: 'flex',
+  position: 'relative',
+  justifyContent: 'flex-start',
+})
 
 function changeMonth(newMonth) {
   if (newMonth < 0) newMonth = 11
@@ -76,7 +73,13 @@ onBeforeMount(async () => {
 })
 </script>
 <template>
-  <div id="container" v-if="months.length > 0">
+  <Header
+    v-model:showSideBar="showSideBar"
+    v-model:sideBarStyle="sideBarStyle"
+    v-model:calenderStyle="calenderStyle"
+    v-model:mobileMode="mobileMode"
+  />
+  <div id="container" v-if="months.length > 0" :style="containerStyle">
     <div class="calender" :style="calenderStyle">
       <Calender
         v-model:months="months"
@@ -88,12 +91,6 @@ onBeforeMount(async () => {
       />
     </div>
     <div class="create-event" :style="sideBarStyle">
-      <img
-        src="./components/icons/menu.svg"
-        alt="Menu Icon"
-        id="menu-icon"
-        @click="toggleSideBar"
-      />
       <CreateEvent
         v-show="showSideBar"
         :months="months"
@@ -113,15 +110,5 @@ body {
   margin: 0;
   padding: 0;
   font-family: Arial, sans-serif;
-}
-
-#menu-icon {
-  width: 40px;
-  cursor: pointer;
-}
-
-#container {
-  display: flex;
-  justify-content: flex-start;
 }
 </style>

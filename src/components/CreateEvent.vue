@@ -138,19 +138,8 @@ async function addEvent(event) {
     </div>
     <div class="countries">
       Countries:
-      <div
-        v-for="country in countries"
-        :key="country.id"
-        class="country"
-        style="width: fit-content"
-        @click="emit('toggleCountry', country.id)"
-      >
-        <input
-          type="checkbox"
-          :name="country.name"
-          :value="country.name"
-          :checked="country.selected"
-        />
+      <div v-for="country in countries" :key="country.id" class="country" style="width: fit-content" @click="emit('toggleCountry', country.id)">
+        <input type="checkbox" :name="country.name" :value="country.name" :checked="country.selected" />
         <label :for="country.name">
           {{ country.name }}
         </label>
@@ -159,12 +148,7 @@ async function addEvent(event) {
 
     <div class="changeMonth">
       <select name="month" id="month" @change="handleMonthChange">
-        <option
-          v-for="(month, index) in months"
-          :key="index"
-          :value="index"
-          :selected="index == props.currentMonth"
-        >
+        <option v-for="(month, index) in months" :key="index" :value="index" :selected="index == props.currentMonth">
           {{ month.name }}
         </option>
       </select>
@@ -182,12 +166,7 @@ async function addEvent(event) {
 
         <input type="number" name="day-input" class="day-input" :value="daySelected" />/
         <select name="month-input" class="month-input">
-          <option
-            v-for="(month, index) in months"
-            :key="index"
-            :value="index"
-            :selected="index == props.currentMonth"
-          >
+          <option v-for="(month, index) in months" :key="index" :value="index" :selected="index == props.currentMonth">
             {{ month.name }}
           </option>
         </select>
@@ -196,11 +175,7 @@ async function addEvent(event) {
         <br /><br />
 
         <label for="descriptionInput">Description: </label>
-        <textarea
-          name="descriptionInput"
-          id="descriptionInput"
-          @change="descriptionError = null"
-        ></textarea>
+        <textarea name="descriptionInput" id="descriptionInput" @change="descriptionError = null"></textarea>
         <div v-if="descriptionError" class="error">{{ descriptionError }}</div>
 
         <br /><br />
@@ -217,29 +192,10 @@ async function addEvent(event) {
         <br /><br />
 
         <button type="submit" id="submit-event">Add Event</button>
-        <svg
-          v-if="sendingEvent"
-          class="spinner"
-          width="30px"
-          height="30px"
-          viewBox="0 0 66 66"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <circle
-            class="path"
-            fill="none"
-            stroke-width="6"
-            stroke-linecap="round"
-            cx="33"
-            cy="33"
-            r="30"
-          ></circle></svg
+        <svg v-if="sendingEvent" class="spinner" width="30px" height="30px" viewBox="0 0 66 66" xmlns="http://www.w3.org/2000/svg">
+          <circle class="path" fill="none" stroke-width="6" stroke-linecap="round" cx="33" cy="33" r="30"></circle></svg
         ><br />
-        <div
-          id="event-result"
-          :class="{ error: !eventResponse.status, success: eventResponse.status }"
-          v-if="eventResponse.show"
-        >
+        <div id="event-result" :class="{ error: !eventResponse.status, success: eventResponse.status }" v-if="eventResponse.show">
           {{ eventResponse.message }}
         </div>
       </form>
@@ -248,10 +204,6 @@ async function addEvent(event) {
 </template>
 
 <style scoped>
-.text-input {
-  width: 70%;
-}
-
 .container > * {
   margin-top: 20px;
 }

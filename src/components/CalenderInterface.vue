@@ -47,10 +47,7 @@ function getDayObject(index) {
  * @returns {boolean} if the day is selected
  */
 function isSelected(index) {
-  return (
-    getCurrnetMonthObject.value.dates[index].number === props.daySelected &&
-    getCurrnetMonthObject.value.dates[index].dayIsInThisMonth
-  )
+  return getCurrnetMonthObject.value.dates[index].number === props.daySelected && getCurrnetMonthObject.value.dates[index].dayIsInThisMonth
 }
 
 /**
@@ -102,11 +99,7 @@ function getEventsForADay(index) {
     <button @click="changeMonthButton(1)">Next</button>
   </div>
 
-  <div
-    id="calender-grid"
-    :style="{ 'grid-template-rows': `repeat(${getCurrnetMonthObject.rows}, ${itemHeight}%)` }"
-    :class="animateCalender"
-  >
+  <div id="calender-grid" :style="{ 'grid-template-rows': `repeat(${getCurrnetMonthObject.rows}, ${itemHeight}%)` }" :class="animateCalender">
     <div
       v-for="(n, index) in 7 * getCurrnetMonthObject.rows"
       :key="n"
@@ -197,7 +190,7 @@ function getEventsForADay(index) {
 }
 .event-name {
   background-color: lightcoral;
-  margin: 10px;
+  /* margin: 10px; */
   padding-left: 5px;
   padding-right: 5px;
   border-radius: 5px;
