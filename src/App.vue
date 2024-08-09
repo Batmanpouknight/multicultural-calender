@@ -1,9 +1,9 @@
 <script setup>
-import { ref, onBeforeMount } from 'vue'
+import { ref, reactive, onBeforeMount } from 'vue'
 
 const months = ref([])
 
-const loading = ref(true)
+const loadingApp = ref(true)
 
 const countries = ref([
   { id: 1, name: 'Iran', selected: true },
@@ -11,12 +11,40 @@ const countries = ref([
   { id: 3, name: 'Ukraine', selected: true },
   { id: 4, name: 'China', selected: true },
   { id: 5, name: 'Korea', selected: true },
-  { id: 5, name: 'Indigenous', selected: true },
+  { id: 6, name: 'Indigenous', selected: true },
 ])
 
 const daySelected = ref(new Date().getDate())
 
 const currentMonth = ref(new Date().getMonth())
+
+const showSideBar = ref(true)
+
+const sideBarStyle = reactive({
+  width: '20vw',
+  height: '98vh',
+  order: 1,
+  zIndex: 1,
+})
+
+const calenderStyle = reactive({
+  height: '98vh',
+  width: '80vw',
+  order: 2,
+  zIndex: 0,
+})
+
+function toggleSideBar() {
+  if (showSideBar.value) {
+    showSideBar.value = false
+    sideBarStyle.width = '5vw'
+    calenderStyle.width = '97vw'
+  } else {
+    showSideBar.value = true
+    sideBarStyle.width = '20vw'
+    calenderStyle.width = '80vw'
+  }
+}
 
 function changeMonth(newMonth) {
   if (newMonth < 0) newMonth = 11
@@ -44,12 +72,12 @@ onBeforeMount(async () => {
   } catch (error) {
     console.error('Server did not respond: ', error)
   }
-  loading.value = false
+  loadingApp.value = false
 })
 </script>
 <template>
   <div id="container" v-if="months.length > 0">
-    <div class="calender">
+    <div class="calender" :style="calenderStyle">
       <Calender
         v-model:months="months"
         :daySelected="daySelected"
@@ -59,8 +87,15 @@ onBeforeMount(async () => {
         @changeDay="changeDay"
       />
     </div>
-    <div class="create-event">
+    <div class="create-event" :style="sideBarStyle">
+      <img
+        src="./components/icons/menu.svg"
+        alt="Menu Icon"
+        id="menu-icon"
+        @click="toggleSideBar"
+      />
       <CreateEvent
+        v-show="showSideBar"
         :months="months"
         :daySelected="daySelected"
         :currentMonth="currentMonth"
@@ -70,23 +105,23 @@ onBeforeMount(async () => {
       />
     </div>
   </div>
-  <div v-else-if="loading">Loading...</div>
+  <div v-else-if="loadingApp">Loading...</div>
   <div v-else>Something went wrong</div>
 </template>
 <style>
+body {
+  margin: 0;
+  padding: 0;
+  font-family: Arial, sans-serif;
+}
+
+#menu-icon {
+  width: 40px;
+  cursor: pointer;
+}
+
 #container {
   display: flex;
   justify-content: flex-start;
-}
-
-.create-event {
-  width: 20vw;
-  height: 90vh;
-  order: 1;
-}
-.calender {
-  height: 90vh;
-  width: 80vw;
-  order: 2;
 }
 </style>

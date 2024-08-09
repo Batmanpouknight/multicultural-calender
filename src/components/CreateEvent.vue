@@ -1,5 +1,5 @@
 <script setup>
-import { computed, ref } from 'vue'
+import { computed, ref, reactive } from 'vue'
 
 const props = defineProps(['daySelected', 'currentMonth', 'countries'])
 const emit = defineEmits(['toggleCountry', 'changeMonth'])
@@ -8,6 +8,8 @@ const nameError = ref(null)
 const descriptionError = ref(null)
 const countryError = ref(null)
 const dateError = ref(null)
+const sendingEvent = ref(false)
+const eventResponse = reactive({ show: false, status: null, message: null })
 
 const getMonth = computed(() => {
   return months.value[props.currentMonth]
@@ -49,6 +51,7 @@ async function addEvent(event) {
   const dayIndex = Number(dayNumber) + getOffSetOfMonth(months.value[month])
   const button = event.target.querySelector('button')
   button.disabled = true
+  sendingEvent.value = true
 
   console.log(dayNumber, dayIndex)
 
@@ -80,7 +83,11 @@ async function addEvent(event) {
     error = true
   }
   if (error) {
+    eventResponse.show = true
+    eventResponse.status = false
+    eventResponse.message = 'Some fields are invalid'
     button.disabled = false
+    sendingEvent.value = false
     return
   }
 
@@ -99,6 +106,10 @@ async function addEvent(event) {
       }),
     })
     button.disabled = false
+    sendingEvent.value = false
+    eventResponse.show = true
+    eventResponse.status = true
+    eventResponse.message = 'Success!'
 
     months.value[month].dates[dayIndex].events.push({
       id: id,
@@ -108,27 +119,30 @@ async function addEvent(event) {
     })
   } catch (error) {
     console.error(error)
+    eventResponse.show = true
+    eventResponse.status = false
+    eventResponse.message = 'Something went wrong. Please try again later.'
     button.disabled = false
+    sendingEvent.value = false
   }
 }
 </script>
 
 <template>
   <div class="container">
-    <div class="dateInfo">
-      <div>Date: {{ getMonth.name }} {{ daySelected }}</div>
-      <div v-show="getCurrentDay.events.length > 0" class="events">
-        Events:
-        <ul>
-          <li v-for="event in getEventsForSelectedDay" :key="event.id">{{ event.name }}</li>
-        </ul>
-      </div>
+    <div v-show="getCurrentDay.events.length > 0" class="events">
+      Events:
+      <ul>
+        <li v-for="event in getEventsForSelectedDay" :key="event.id">{{ event.name }}</li>
+      </ul>
     </div>
     <div class="countries">
       Countries:
       <div
         v-for="country in countries"
         :key="country.id"
+        class="country"
+        style="width: fit-content"
         @click="emit('toggleCountry', country.id)"
       >
         <input
@@ -162,8 +176,8 @@ async function addEvent(event) {
     <div class="new-event">
       <form @submit.prevent="addEvent">
         <label for="name-input">Name: </label>
-        <input type="text" class="name-input" name="name-input" />
-        <span v-if="nameError" class="error">{{ nameError }}</span>
+        <input type="text" class="name-input" name="name-input" @change="nameError = null" />
+        <div v-if="nameError" class="error">{{ nameError }}</div>
         <br /><br />
 
         <input type="number" name="day-input" class="day-input" :value="daySelected" />/
@@ -177,28 +191,57 @@ async function addEvent(event) {
             {{ month.name }}
           </option>
         </select>
-        <span v-if="dateError" class="error">{{ dateError }}</span>
+        <div v-if="dateError" class="error">{{ dateError }}</div>
 
         <br /><br />
 
         <label for="descriptionInput">Description: </label>
-        <textarea name="descriptionInput" id="descriptionInput"></textarea>
-        <span v-if="descriptionError" class="error">{{ descriptionError }}</span>
+        <textarea
+          name="descriptionInput"
+          id="descriptionInput"
+          @change="descriptionError = null"
+        ></textarea>
+        <div v-if="descriptionError" class="error">{{ descriptionError }}</div>
 
         <br /><br />
 
         <label for="selectCountry">Select Country: </label>
-        <select name="selectCountry" id="selectCountry">
+        <select name="selectCountry" id="selectCountry" @change="countryError = null">
           <option value="default" selected disabled>Choose an option</option>
           <option v-for="(country, index) in countries" :key="index" :value="index">
             {{ country.name }}
           </option>
         </select>
-        <span v-if="countryError" class="error">{{ countryError }}</span>
+        <div v-if="countryError" class="error">{{ countryError }}</div>
 
         <br /><br />
 
-        <button type="submit">Add Event</button>
+        <button type="submit" id="submit-event">Add Event</button>
+        <svg
+          v-if="sendingEvent"
+          class="spinner"
+          width="30px"
+          height="30px"
+          viewBox="0 0 66 66"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <circle
+            class="path"
+            fill="none"
+            stroke-width="6"
+            stroke-linecap="round"
+            cx="33"
+            cy="33"
+            r="30"
+          ></circle></svg
+        ><br />
+        <div
+          id="event-result"
+          :class="{ error: !eventResponse.status, success: eventResponse.status }"
+          v-if="eventResponse.show"
+        >
+          {{ eventResponse.message }}
+        </div>
       </form>
     </div>
   </div>
@@ -218,7 +261,17 @@ input[type='checkbox'].custom-checkbox {
 }
 
 .error {
-  color: red;
+  width: fit-content;
+  margin-top: 5px;
+  background-color: red;
+  color: white;
+}
+
+.success {
+  width: fit-content;
+  margin-top: 5px;
+  background-color: green;
+  color: white;
 }
 
 .day-input {
@@ -228,5 +281,83 @@ input[type='checkbox'].custom-checkbox {
 .month-input {
   width: 85px;
   font-size: 12px;
+}
+
+#submit-event {
+  background-color: #4caf50;
+  color: white;
+  height: 40px;
+  width: 100px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+#submit-event:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+
+#submit-event:hover {
+  background-color: green;
+}
+
+select {
+  background-color: rgba(0, 0, 0, 0.22);
+  border: none;
+}
+
+.spinner {
+  animation: rotator 1.4s linear infinite;
+}
+
+@keyframes rotator {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(270deg);
+  }
+}
+
+.path {
+  stroke-dasharray: 187;
+  stroke-dashoffset: 0;
+  transform-origin: center;
+  animation:
+    dash 1.4s ease-in-out infinite,
+    colors 5.6s ease-in-out infinite;
+}
+
+@keyframes colors {
+  0% {
+    stroke: #4285f4;
+  }
+  25% {
+    stroke: #de3e35;
+  }
+  50% {
+    stroke: #f7c223;
+  }
+  75% {
+    stroke: #1b9a59;
+  }
+  100% {
+    stroke: #4285f4;
+  }
+}
+
+@keyframes dash {
+  0% {
+    stroke-dashoffset: 187;
+  }
+  50% {
+    stroke-dashoffset: 46.75;
+    transform: rotate(135deg);
+  }
+  100% {
+    stroke-dashoffset: 187;
+    transform: rotate(450deg);
+  }
 }
 </style>
