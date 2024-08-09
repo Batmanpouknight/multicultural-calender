@@ -223,8 +223,8 @@ function getEventsForADay(index) {
 
 .event-details {
   position: fixed;
-  height: 500px;
-  width: 500px;
+  height: 300px;
+  width: 300px;
   z-index: 1000;
   background-color: orange;
   top: 50%;
