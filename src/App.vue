@@ -1,6 +1,7 @@
 <script setup>
 import { ref, reactive, onBeforeMount } from 'vue'
 import Header from './components/AppHeader.vue'
+import AccountComp from './components/AccountComp.vue'
 
 const months = ref([])
 
@@ -102,6 +103,9 @@ onBeforeMount(async () => {
         @toggleCountry="toggleCountry"
       />
     </div>
+    <div class="account-overlay">
+      <AccountComp />
+    </div>
   </div>
   <div v-else-if="loadingApp">Loading...</div>
   <div v-else>Something went wrong</div>
@@ -128,5 +132,17 @@ body {
   background-color: #f0f0f0;
   justify-content: center;
   align-items: center;
+}
+
+.account-overlay {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 500px;
+  height: 90vh;
+  background-color: red;
+  z-index: 1001;
+  display: none;
 }
 </style>
