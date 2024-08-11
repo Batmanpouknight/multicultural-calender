@@ -24,18 +24,22 @@ const showSideBar = ref(true)
 const mobileMode = ref(false)
 
 const sideBarStyle = reactive({
-  width: '10vw',
+  width: '15vw',
   height: '92vh',
   'background-color': 'white',
-  order: 2,
+  // order: 2,
   zIndex: 1,
 })
 
 const calenderStyle = reactive({
   height: '92vh',
-  width: '90vw',
-  order: 3,
+  width: '85vw',
+  // order: 3,
   zIndex: 0,
+})
+
+const gridArea = reactive({
+  'grid-template-columns': '15vw 85vw',
 })
 
 const animateCalender = reactive({
@@ -94,7 +98,7 @@ onBeforeMount(async () => {
 })
 </script>
 <template>
-  <div id="container" v-if="months.length > 0">
+  <div id="container" v-if="months.length > 0" :style="gridArea">
     <div class="header">
       <Header
         v-if="months.length > 0"
@@ -104,6 +108,7 @@ onBeforeMount(async () => {
         v-model:mobileMode="mobileMode"
         v-model:animateSideBar="animateSideBar"
         v-model:animateCalender="animateCalender"
+        v-model:gridArea="gridArea"
         :months="months"
         :currentMonth="currentMonth"
         @changeMonth="changeMonth"
@@ -136,6 +141,7 @@ onBeforeMount(async () => {
   </div>
   <div v-else-if="loadingApp">Loading...</div>
   <div v-else>Something went wrong</div>
+  <!-- <input @touchmove="" /> -->
 </template>
 <style>
 @import url('https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css');
@@ -153,20 +159,34 @@ body {
 }
 
 #container {
-  display: flex;
+  /* display: flex;
   position: relative;
   justify-content: flex-start;
-  flex-wrap: wrap;
+  flex-wrap: wrap; */
+  display: grid;
+  grid-template-areas:
+    'header header'
+    'create-event calender';
+  grid-template-rows: 8vh 92vh;
 }
 
 .header {
+  grid-area: header;
   display: flex;
   width: 100vw;
   height: 8vh;
-  order: 1;
+  /* order: 1; */
   background-color: #f0f0f0;
   justify-content: center;
   align-items: center;
+}
+
+.calender {
+  grid-area: calender;
+}
+
+.create-event {
+  grid-area: create-event;
 }
 
 .account-overlay {
@@ -213,5 +233,11 @@ body {
 }
 .slideOut_animation {
   animation: 200ms linear reverse slideSide;
+}
+
+@media screen and (max-width: 800px) {
+  #container {
+    grid-template-areas: 'header' 'calender';
+  }
 }
 </style>

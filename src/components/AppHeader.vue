@@ -11,6 +11,7 @@ const calenderStyle = defineModel('calenderStyle')
 const mobileMode = defineModel('mobileMode')
 const animateSideBar = defineModel('animateSideBar')
 const animateCalender = defineModel('animateCalender')
+const gridArea = defineModel('gridArea')
 
 /**
  * returns the month object based on the current month
@@ -36,6 +37,7 @@ function toggleSideBar() {
       animateCalender.value.stretch_animation = false
       sideBarStyle.value.display = 'none'
       calenderStyle.value.width = '100vw'
+      gridArea.value['grid-template-columns'] = '0vw 100vw'
     }, 200)
   } else {
     showSideBar.value = true
@@ -43,6 +45,7 @@ function toggleSideBar() {
     animateSideBar.value.slideIn_animation = true
     animateCalender.value.shrink_animation = true
     calenderStyle.value.width = '85vw'
+    gridArea.value['grid-template-columns'] = '15vw 85vw'
     setTimeout(() => {
       animateCalender.value.shrink_animation = false
       animateSideBar.value.slideIn_animation = false
