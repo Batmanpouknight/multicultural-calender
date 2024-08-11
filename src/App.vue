@@ -86,6 +86,27 @@ function toggleCountry(id) {
   country.selected = !country.selected
 }
 
+var firstTouch = {}
+var differenceX = 0
+function handleCalendarTouch(e) {
+  if (e.type == 'touchstart') firstTouch = e.touches[0]
+  else if (e.type == 'touchmove') {
+    differenceX = firstTouch.clientX - e.touches[0].clientX
+    if (Math.abs(differenceX) < Math.abs(window.innerWidth / 6))
+      calenderStyle.transform = `translateX(${-(firstTouch.clientX - e.touches[0].clientX)}px)`
+  } else if (e.type == 'touchend') {
+    differenceX = firstTouch.clientX - e.changedTouches[0].clientX
+    calenderStyle.transform = 'none'
+    if (differenceX > 50) {
+      changeMonth(currentMonth.value + 1)
+    } else if (differenceX < -50) {
+      changeMonth(currentMonth.value - 1)
+    }
+    differenceX = 0
+    firstTouch = {}
+  }
+}
+
 onBeforeMount(async () => {
   try {
     // const res = await fetch('http://localhost:3000/months')
@@ -115,7 +136,15 @@ onBeforeMount(async () => {
       />
     </div>
 
-    <div class="calender" :style="calenderStyle" :class="animateCalender">
+    <div
+      class="calender"
+      :style="calenderStyle"
+      :class="animateCalender"
+      @touchstart="handleCalendarTouch"
+      @touchmove="handleCalendarTouch"
+      @touchend="handleCalendarTouch"
+      @touchcancel="handleCalendarTouch"
+    >
       <Calender
         v-model:months="months"
         :daySelected="daySelected"
@@ -141,7 +170,6 @@ onBeforeMount(async () => {
   </div>
   <div v-else-if="loadingApp">Loading...</div>
   <div v-else>Something went wrong</div>
-  <!-- <input @touchmove="" /> -->
 </template>
 <style>
 @import url('https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css');
@@ -168,6 +196,7 @@ body {
     'header header'
     'create-event calender';
   grid-template-rows: 8vh 92vh;
+  overflow: hidden;
 }
 
 .header {
