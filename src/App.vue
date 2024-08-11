@@ -138,6 +138,7 @@ onBeforeMount(async () => {
   <div v-else>Something went wrong</div>
 </template>
 <style>
+@import url('https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css');
 .animate__animated.animate__slideInLeft {
   --animate-duration: 200ms;
 }
