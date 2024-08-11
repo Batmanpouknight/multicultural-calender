@@ -9,6 +9,8 @@ const showSideBar = defineModel('showSideBar')
 const sideBarStyle = defineModel('sideBarStyle')
 const calenderStyle = defineModel('calenderStyle')
 const mobileMode = defineModel('mobileMode')
+const animateSideBar = defineModel('animateSideBar')
+const animateCalender = defineModel('animateCalender')
 
 /**
  * returns the month object based on the current month
@@ -21,40 +23,48 @@ const getCurrnetMonthObject = computed(() => {
 function changeMonthButton(direction) {
   console.log('smth')
   emit('changeMonth', props.currentMonth + direction)
-
-  // if (direction === 1) {
-  //   animateCalender.animate__slideInRight = true
-  //   animateCalender.animate__slideInLeft = false
-  // } else {
-  //   animateCalender.animate__slideInRight = false
-  //   animateCalender.animate__slideInLeft = true
-  // }
-
-  // setTimeout(() => {
-  //   animateCalender.animate__slideInRight = false
-  //   animateCalender.animate__slideInLeft = false
-  // }, 200)
 }
 
 function toggleSideBar() {
   if (showSideBar.value) {
     showSideBar.value = false
-    sideBarStyle.value.display = 'none'
-    calenderStyle.value.width = '100vw'
+    animateSideBar.value.slideOut_animation = true
+    animateCalender.value.stretch_animation = true
+
+    setTimeout(() => {
+      animateSideBar.value.slideOut_animation = false
+      animateCalender.value.stretch_animation = false
+      sideBarStyle.value.display = 'none'
+      calenderStyle.value.width = '100vw'
+    }, 200)
   } else {
     showSideBar.value = true
     sideBarStyle.value.display = 'block'
-    calenderStyle.value.width = '80vw'
+    animateSideBar.value.slideIn_animation = true
+    animateCalender.value.shrink_animation = true
+    calenderStyle.value.width = '85vw'
+    setTimeout(() => {
+      animateCalender.value.shrink_animation = false
+      animateSideBar.value.slideIn_animation = false
+    }, 200)
   }
 }
 
 function overlapSideBar() {
   if (showSideBar.value) {
     showSideBar.value = false
-    sideBarStyle.value.display = 'none'
+    animateSideBar.value.slideOut_animation = true
+    setTimeout(() => {
+      sideBarStyle.value.display = 'none'
+      animateSideBar.value.slideOut_animation = false
+    }, 200)
   } else {
     sideBarStyle.value.display = 'block'
     showSideBar.value = true
+    animateSideBar.value.slideIn_animation = true
+    setTimeout(() => {
+      animateSideBar.value.slideIn_animation = false
+    }, 200)
   }
 }
 
@@ -79,8 +89,8 @@ onMounted(() => {
     sideBarStyle.value.position = 'relative'
     sideBarStyle.value.display = 'block'
     sideBarStyle.value.top = '0'
-    sideBarStyle.value.width = '20vw'
-    calenderStyle.value.width = '80vw'
+    sideBarStyle.value.width = '15vw'
+    calenderStyle.value.width = '85vw'
   }
   window.addEventListener('resize', () => {
     if (window.innerWidth < 800) {
@@ -98,8 +108,8 @@ onMounted(() => {
       sideBarStyle.value.position = 'relative'
       sideBarStyle.value.display = 'block'
       sideBarStyle.value.top = '0'
-      sideBarStyle.value.width = '20vw'
-      calenderStyle.value.width = '80vw'
+      sideBarStyle.value.width = '15vw'
+      calenderStyle.value.width = '85vw'
     }
   })
 })

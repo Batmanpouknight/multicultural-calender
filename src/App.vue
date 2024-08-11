@@ -24,7 +24,7 @@ const showSideBar = ref(true)
 const mobileMode = ref(false)
 
 const sideBarStyle = reactive({
-  width: '20vw',
+  width: '10vw',
   height: '92vh',
   'background-color': 'white',
   order: 2,
@@ -33,12 +33,38 @@ const sideBarStyle = reactive({
 
 const calenderStyle = reactive({
   height: '92vh',
-  width: '80vw',
+  width: '90vw',
   order: 3,
   zIndex: 0,
 })
 
+const animateCalender = reactive({
+  animate__animated: true,
+  animate__slideInLeft: false,
+  animate__slideInRight: false,
+  stretch_animation: false,
+  shrink_animation: false,
+})
+
+const animateSideBar = reactive({
+  slideIn_animation: false,
+  slideOut_animation: false,
+})
+
 function changeMonth(newMonth) {
+  if (newMonth > currentMonth.value) {
+    animateCalender.animate__slideInRight = true
+    animateCalender.animate__slideInLeft = false
+  } else {
+    animateCalender.animate__slideInRight = false
+    animateCalender.animate__slideInLeft = true
+  }
+
+  setTimeout(() => {
+    animateCalender.animate__slideInRight = false
+    animateCalender.animate__slideInLeft = false
+  }, 200)
+
   if (newMonth < 0) newMonth = 11
   else if (newMonth > 11) newMonth = 0
   currentMonth.value = newMonth
@@ -76,13 +102,15 @@ onBeforeMount(async () => {
         v-model:sideBarStyle="sideBarStyle"
         v-model:calenderStyle="calenderStyle"
         v-model:mobileMode="mobileMode"
+        v-model:animateSideBar="animateSideBar"
+        v-model:animateCalender="animateCalender"
         :months="months"
         :currentMonth="currentMonth"
         @changeMonth="changeMonth"
       />
     </div>
 
-    <div class="calender" :style="calenderStyle">
+    <div class="calender" :style="calenderStyle" :class="animateCalender">
       <Calender
         v-model:months="months"
         :daySelected="daySelected"
@@ -92,9 +120,8 @@ onBeforeMount(async () => {
         @changeDay="changeDay"
       />
     </div>
-    <div class="create-event" :style="sideBarStyle">
+    <div class="create-event" :style="sideBarStyle" :class="animateSideBar">
       <CreateEvent
-        v-show="showSideBar"
         :months="months"
         :daySelected="daySelected"
         :currentMonth="currentMonth"
@@ -111,6 +138,13 @@ onBeforeMount(async () => {
   <div v-else>Something went wrong</div>
 </template>
 <style>
+.animate__animated.animate__slideInLeft {
+  --animate-duration: 200ms;
+}
+.animate__animated.animate__slideInRight {
+  --animate-duration: 200ms;
+}
+
 body {
   margin: 0;
   padding: 0;
@@ -144,5 +178,39 @@ body {
   background-color: red;
   z-index: 1001;
   display: none;
+}
+
+@keyframes stretchCalendar {
+  0% {
+    width: 85vw;
+  }
+  100% {
+    transform: scaleX(1.176470588);
+  }
+}
+
+@keyframes slideSide {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+.stretch_animation {
+  transform-origin: right;
+  animation: 200ms linear stretchCalendar;
+}
+.shrink_animation {
+  transform-origin: right;
+  animation: 200ms linear reverse stretchCalendar;
+}
+
+.slideIn_animation {
+  animation: 200ms linear slideSide;
+}
+.slideOut_animation {
+  animation: 200ms linear reverse slideSide;
 }
 </style>

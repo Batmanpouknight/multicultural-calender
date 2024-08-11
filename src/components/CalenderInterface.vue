@@ -1,5 +1,5 @@
 <script setup>
-import { computed, ref, reactive, onMounted } from 'vue'
+import { computed, ref, onMounted } from 'vue'
 
 const props = defineProps(['months', 'daySelected', 'currentMonth', 'countries'])
 const emit = defineEmits(['changeMonth', 'changeDay'])
@@ -12,12 +12,6 @@ const days = ref(dayShortStrings)
 const showOverlay = ref(false)
 
 const showEventDetailsForDay = ref(new Date().getDate())
-
-const animateCalender = reactive({
-  animate__animated: true,
-  animate__slideInLeft: false,
-  animate__slideInRight: false,
-})
 
 /**
  * returns the height of the items in the calender grid
@@ -54,27 +48,6 @@ function isSelected(index) {
 }
 
 /**
- * changes the month based on the direction
- * @param {number} direction the direction to change the month
- */
-function changeMonthButton(direction) {
-  console.log('smth')
-  emit('changeMonth', props.currentMonth + direction)
-  if (direction === 1) {
-    animateCalender.animate__slideInRight = true
-    animateCalender.animate__slideInLeft = false
-  } else {
-    animateCalender.animate__slideInRight = false
-    animateCalender.animate__slideInLeft = true
-  }
-
-  setTimeout(() => {
-    animateCalender.animate__slideInRight = false
-    animateCalender.animate__slideInLeft = false
-  }, 200)
-}
-
-/**
  * returns the events for a specific day based on the filetered countries
  * @param {number} day the day to get the events for
  * @returns {array} the events for the day
@@ -104,15 +77,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <!-- <div class="month">
-    <button @click="changeMonthButton(-1)">Prev</button>
-    <h1 class="monthName" :class="animateCalender">
-      {{ getCurrnetMonthObject.name }}
-    </h1>
-    <button @click="changeMonthButton(1)">Next</button>
-  </div> -->
-
-  <div id="calender-grid" :style="{ 'grid-template-rows': `repeat(${getCurrnetMonthObject.rows}, ${itemHeight}%)` }" :class="animateCalender">
+  <div id="calender-grid" :style="{ 'grid-template-rows': `repeat(${getCurrnetMonthObject.rows}, ${itemHeight}%)` }">
     <div
       v-for="(n, index) in 7 * getCurrnetMonthObject.rows"
       :key="n"
@@ -151,14 +116,6 @@ onMounted(() => {
 </template>
 
 <style scoped>
-@import 'https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css';
-.animate__animated.animate__slideInLeft {
-  --animate-duration: 200ms;
-}
-.animate__animated.animate__slideInRight {
-  --animate-duration: 200ms;
-}
-
 .calender-item.notThisMonth {
   background-color: gray;
   color: white;
