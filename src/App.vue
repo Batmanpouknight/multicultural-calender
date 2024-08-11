@@ -20,6 +20,7 @@ const daySelected = ref(new Date().getDate())
 
 const currentMonth = ref(new Date().getMonth())
 
+const showAccountOverlay = ref(false)
 const showSideBar = ref(true)
 const mobileMode = ref(false)
 
@@ -133,6 +134,7 @@ onBeforeMount(async () => {
         :months="months"
         :currentMonth="currentMonth"
         @changeMonth="changeMonth"
+        @showAccountOverlay="showAccountOverlay = true"
       />
     </div>
 
@@ -164,8 +166,8 @@ onBeforeMount(async () => {
         @toggleCountry="toggleCountry"
       />
     </div>
-    <div class="account-overlay">
-      <AccountComp />
+    <div class="account-overlay" v-if="showAccountOverlay">
+      <AccountComp @hideAccountOverlay="showAccountOverlay = false" />
     </div>
   </div>
   <div v-else-if="loadingApp">Loading...</div>
@@ -223,11 +225,10 @@ body {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: 500px;
-  height: 90vh;
-  background-color: red;
+  background-color: rgba(0, 0, 0, 0.5);
+  width: 100vw;
+  height: 100vh;
   z-index: 1001;
-  display: none;
 }
 
 @keyframes stretchCalendar {

@@ -3,7 +3,7 @@ import { onMounted, computed } from 'vue'
 
 const props = defineProps(['months', 'currentMonth'])
 
-const emit = defineEmits(['changeMonth'])
+const emit = defineEmits(['changeMonth', 'showAccountOverlay'])
 
 const showSideBar = defineModel('showSideBar')
 const sideBarStyle = defineModel('sideBarStyle')
@@ -128,7 +128,7 @@ onMounted(() => {
       <button @click="changeMonthButton(1)">Next</button>
     </div>
     <img src="./icons/menu.svg" alt="Menu Icon" id="menu-icon" @click="handleHide" />
-    <div id="account">Account</div>
+    <div id="account" @click="emit('showAccountOverlay')">Account</div>
   </div>
 </template>
 
