@@ -92,7 +92,7 @@ async function addEvent(event) {
   }
 
   try {
-    const id = await fetch('https://calender-database.onrender.com/api/addevent', {
+    const response = await fetch('https://calender-database.onrender.com/api/addevent', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -110,6 +110,7 @@ async function addEvent(event) {
     eventResponse.show = true
     eventResponse.status = true
     eventResponse.message = 'Success!'
+    const id = await response.text()
 
     months.value[month].dates[dayIndex].events.push({
       id: id,

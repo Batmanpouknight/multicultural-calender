@@ -1,9 +1,127 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, reactive } from 'vue'
+import Joi from 'joi'
+import bcrypt from 'bcryptjs'
 
 const emit = defineEmits(['hideAccountOverlay'])
 
+const formValues = reactive({
+  email: '',
+  password: '',
+  'confirm-password': '',
+})
+
 const showInfo = ref('signup')
+const errors = ref([])
+const disableForm = ref(false)
+
+function updateFormValues(e) {
+  formValues[e.target.name] = e.target.value
+}
+
+async function signupSubmit(e) {
+  disableForm.value = true
+  const email = formValues.email
+  const password = formValues.password
+  const confirmPassword = formValues['confirm-password']
+  errors.value = []
+  if (password !== confirmPassword) {
+    errors.value.push({ id: 1, message: 'Passwords do not match', location: 'password' })
+    disableForm.value = false
+  }
+  const schema = Joi.object({
+    email: Joi.string()
+      .email({ tlds: { allow: ['com', 'ca', 'net'] } })
+      .required(),
+    password: Joi.string().min(6).max(12).required(),
+  })
+  const { error } = schema.validate({ email, password }, { abortEarly: false })
+  if (error) {
+    console.log(error.details)
+    for (let i = 0; i < error.details.length; i++) {
+      errors.value.push({ id: i + 2, message: error.details[i].message, location: error.details[i].context.key })
+    }
+    disableForm.value = false
+  }
+
+  const hashedPassword = await bcrypt.hash(password, 15)
+
+  if (errors.value.length === 0) {
+    console.log('no errors')
+    try {
+      const response = await fetch('http://localhost:3000/users/signup', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password: hashedPassword }),
+      })
+      const data = await response.json()
+      if (data.error) {
+        errors.value.push({ id: data.error.code, message: data.error.message, location: data.error.location })
+        disableForm.value = false
+        return
+      }
+
+      disableForm.value = false
+      console.log(data)
+    } catch (error) {
+      console.log(error)
+    }
+  }
+}
+
+async function loginSubmit(e) {
+  disableForm.value = true
+  const email = formValues.email
+  const password = formValues.password
+  errors.value = []
+  const schema = Joi.object({
+    email: Joi.string()
+      .email({ tlds: { allow: ['com', 'ca', 'net'] } })
+      .required(),
+    password: Joi.string().min(6).max(12).required(),
+  })
+  const { error } = schema.validate({ email, password }, { abortEarly: false })
+  if (error) {
+    console.log(error.details)
+    for (let i = 0; i < error.details.length; i++) {
+      errors.value.push({ id: i + 2, message: error.details[i].message, location: error.details[i].context.key })
+    }
+    disableForm.value = false
+  }
+  if (errors.value.length == 0) {
+    try {
+      const response = await fetch('http://localhost:3000/users/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email }),
+      })
+      const data = await response.json()
+      if (data.error) {
+        errors.value.push({ id: data.error.code, message: data.error.message, location: data.error.location })
+        disableForm.value = false
+        return
+      }
+
+      const userInfo = data.result
+      console.log(userInfo)
+
+      const passwordMatch = await bcrypt.compare(password, userInfo.password)
+      if (!passwordMatch) {
+        errors.value.push({ id: 401, message: 'Incorrect password', location: 'password' })
+        disableForm.value = false
+        return
+      }
+
+      disableForm.value = false
+    } catch (error) {
+      console.log(error)
+    }
+  }
+}
 </script>
 <template>
   <div id="account-container">
@@ -15,21 +133,45 @@ const showInfo = ref('signup')
       </div>
       <div id="signup" v-if="showInfo == 'signup'">
         <h2 style="text-align: center">Sign Up</h2>
-        <form class="info-form">
-          <div><label for="email">Email</label> <input type="email" id="email" name="email" /></div>
-          <div><label for="password">Password</label> <input type="password" id="password" name="password" /></div>
-          <div><label for="confirm-password">Confirm Password</label> <input type="password" id="confirm-password" name="confirm-password" /></div>
-          <button type="submit">Sign Up</button>
-          <button type="button" @click="showInfo = 'login'">Login</button>
+        <form class="info-form" @submit.prevent="signupSubmit" novalidate>
+          <div>
+            <label for="email">Email</label>
+            <input type="email" id="email" name="email" :value="formValues.email" @change="updateFormValues" :disabled="disableForm" />
+          </div>
+          <div>
+            <label for="password">Password</label>
+            <input type="password" id="password" name="password" :value="formValues.password" @change="updateFormValues" :disabled="disableForm" />
+          </div>
+          <div>
+            <label for="confirm-password">Confirm Password</label>
+            <input
+              type="password"
+              id="confirm-password"
+              name="confirm-password"
+              :value="formValues['confirm-password']"
+              @change="updateFormValues"
+              :disabled="disableForm"
+            />
+          </div>
+          <button class="submit-button" type="submit" :disabled="disableForm">Sign Up</button>
+          <button class="change-form-button" type="button" @click="showInfo = 'login'" :disabled="disableForm">Log In</button>
+          <div class="errors" v-for="error in errors" :key="error.id">{{ error.message }}</div>
         </form>
       </div>
-      <div id="login" v-else-if="showInfo == 'login'">
+      <div id="login" v-else-if="showInfo == 'login'" novalidate>
         <h2 style="text-align: center">Login</h2>
-        <form class="info-form">
-          <div><label for="email">Email</label> <input type="email" id="email" name="email" /></div>
-          <div><label for="password">Password</label> <input type="password" id="password" name="password" /></div>
-          <button type="submit">Login</button>
-          <button type="button" @click="showInfo = 'signup'">Sign Up</button>
+        <form class="info-form" @submit.prevent="loginSubmit">
+          <div>
+            <label for="email">Email</label>
+            <input type="email" id="email" name="email" :value="formValues.email" @change="updateFormValues" :disabled="disableForm" />
+          </div>
+          <div>
+            <label for="password">Password</label>
+            <input type="password" id="password" name="password" :value="formValues.password" @change="updateFormValues" :disabled="disableForm" />
+          </div>
+          <button class="submit-button" type="submit" :disabled="disableForm">Login</button>
+          <button class="change-form-button" type="button" @click="showInfo = 'signup'" :disabled="disableForm">Sign Up</button>
+          <div class="errors" v-for="error in errors" :key="error.id">{{ error.message }}</div>
         </form>
       </div>
     </div>
@@ -102,5 +244,14 @@ button {
   border: none;
   border-radius: 5px;
   cursor: pointer;
+}
+
+button:hover {
+  background-color: #3f3f7f;
+}
+
+button:disabled {
+  background-color: gray;
+  cursor: not-allowed;
 }
 </style>
