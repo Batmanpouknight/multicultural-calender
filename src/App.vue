@@ -110,8 +110,8 @@ function handleCalendarTouch(e) {
 
 onBeforeMount(async () => {
   try {
-    const res = await fetch('http://localhost:3000/months')
-    // const res = await fetch('https://calender-database.onrender.com/months')
+    // const res = await fetch('http://localhost:3000/months')
+    const res = await fetch('https://calender-database.onrender.com/months')
     months.value = await res.json()
   } catch (error) {
     console.error('Server did not respond: ', error)
