@@ -15,6 +15,12 @@ const showInfo = ref('signup')
 const errors = ref([])
 const disableForm = ref(false)
 
+const user = reactive({
+  id: '',
+  email: '',
+  type: 'anonymous',
+})
+
 function updateFormValues(e) {
   formValues[e.target.name] = e.target.value
 }
@@ -116,8 +122,12 @@ async function loginSubmit(e) {
         return
       }
 
+      user.id = userInfo.id
+      user.email = userInfo.email
+      user.type = 'normal'
       disableForm.value = false
     } catch (error) {
+      disableForm.value = false
       console.log(error)
     }
   }
@@ -131,7 +141,12 @@ async function loginSubmit(e) {
         <h1>Account Page</h1>
         <h3>LOGO</h3>
       </div>
-      <div id="signup" v-if="showInfo == 'signup'">
+      <div id="user-info" v-if="user.type != 'anonymous'">
+        <h2>Welcome, {{ user.email }}</h2>
+        ligma
+        <button>Log Out</button>
+      </div>
+      <div id="signup" v-else-if="showInfo == 'signup'">
         <h2 style="text-align: center">Sign Up</h2>
         <form class="info-form" @submit.prevent="signupSubmit" novalidate>
           <div>
