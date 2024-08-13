@@ -1,7 +1,7 @@
 <script setup>
 import { onMounted, computed } from 'vue'
 
-const props = defineProps(['months', 'currentMonth'])
+const props = defineProps(['months', 'currentMonth', 'loggedIn'])
 
 const emit = defineEmits(['changeMonth', 'showAccountOverlay'])
 
@@ -128,7 +128,7 @@ onMounted(() => {
       <button @click="changeMonthButton(1)">Next</button>
     </div>
     <img src="./icons/menu.svg" alt="Menu Icon" id="menu-icon" @click="handleHide" />
-    <div id="account" @click="emit('showAccountOverlay')">Account</div>
+    <div id="account" @click="emit('showAccountOverlay')"><span v-if="loggedIn">Account</span> <span v-else>Signup/Login</span></div>
   </div>
 </template>
 

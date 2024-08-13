@@ -2,12 +2,16 @@
 import { ref, reactive } from 'vue'
 import Joi from 'joi'
 import bcrypt from 'bcryptjs'
+import Cookies from 'js-cookie'
+
+const user = defineModel('user')
 
 const emit = defineEmits(['hideAccountOverlay'])
 
 const formValues = reactive({
   email: '',
   password: '',
+  username: '',
   'confirm-password': '',
 })
 
@@ -15,21 +19,24 @@ const showInfo = ref('signup')
 const errors = ref([])
 const disableForm = ref(false)
 
-const user = reactive({
-  id: '',
-  email: '',
-  type: 'anonymous',
-})
-
 function updateFormValues(e) {
   formValues[e.target.name] = e.target.value
 }
 
-async function signupSubmit(e) {
+function updateCookie() {
+  Cookies.set('id', user.value.id, { expires: 14 })
+  Cookies.set('email', user.value.email, { expires: 14 })
+  Cookies.set('username', user.value.username, { expires: 14 })
+  Cookies.set('type', user.value.type, { expires: 14 })
+}
+
+async function signupSubmit() {
   disableForm.value = true
   const email = formValues.email
+  const username = formValues.username
   const password = formValues.password
   const confirmPassword = formValues['confirm-password']
+  const type = 'user'
   errors.value = []
   if (password !== confirmPassword) {
     errors.value.push({ id: 1, message: 'Passwords do not match', location: 'password' })
@@ -39,9 +46,10 @@ async function signupSubmit(e) {
     email: Joi.string()
       .email({ tlds: { allow: ['com', 'ca', 'net'] } })
       .required(),
-    password: Joi.string().min(6).max(12).required(),
+    username: Joi.string().alphanum().min(3).max(12).required(),
+    password: Joi.string().pattern(new RegExp('^[a-zA-Z0-9]{3,20}$')).required(),
   })
-  const { error } = schema.validate({ email, password }, { abortEarly: false })
+  const { error } = schema.validate({ email, username, password }, { abortEarly: false })
   if (error) {
     console.log(error.details)
     for (let i = 0; i < error.details.length; i++) {
@@ -55,12 +63,13 @@ async function signupSubmit(e) {
   if (errors.value.length === 0) {
     console.log('no errors')
     try {
-      const response = await fetch('http://localhost:3000/users/signup', {
+      const response = await fetch('https://calender-database.onrender.com/users/signup', {
+        // const response = await fetch('http://localhost:3000/users/signup', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ email, password: hashedPassword }),
+        body: JSON.stringify({ email, username, password: hashedPassword, type }),
       })
       const data = await response.json()
       if (data.error) {
@@ -70,6 +79,12 @@ async function signupSubmit(e) {
       }
 
       disableForm.value = false
+      user.value.id = data.result.id
+      user.value.email = email
+      user.value.username = username
+      user.value.type = type
+      updateCookie()
+
       console.log(data)
     } catch (error) {
       console.log(error)
@@ -77,7 +92,7 @@ async function signupSubmit(e) {
   }
 }
 
-async function loginSubmit(e) {
+async function loginSubmit() {
   disableForm.value = true
   const email = formValues.email
   const password = formValues.password
@@ -98,7 +113,8 @@ async function loginSubmit(e) {
   }
   if (errors.value.length == 0) {
     try {
-      const response = await fetch('http://localhost:3000/users/login', {
+      const response = await fetch('https://calender-database.onrender.com/users/signup', {
+        // const response = await fetch('http://localhost:3000/users/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -113,7 +129,6 @@ async function loginSubmit(e) {
       }
 
       const userInfo = data.result
-      console.log(userInfo)
 
       const passwordMatch = await bcrypt.compare(password, userInfo.password)
       if (!passwordMatch) {
@@ -122,15 +137,28 @@ async function loginSubmit(e) {
         return
       }
 
-      user.id = userInfo.id
-      user.email = userInfo.email
-      user.type = 'normal'
+      user.value.id = userInfo.id
+      user.value.email = userInfo.email
+      user.value.username = userInfo.username
+      user.value.type = userInfo.type
+      updateCookie()
       disableForm.value = false
     } catch (error) {
       disableForm.value = false
       console.log(error)
     }
   }
+}
+
+function logout() {
+  user.value.id = ''
+  user.value.email = ''
+  user.value.username = ''
+  user.value.type = 'anonymous'
+  Cookies.remove('id')
+  Cookies.remove('email')
+  Cookies.remove('username')
+  Cookies.remove('type')
 }
 </script>
 <template>
@@ -142,9 +170,9 @@ async function loginSubmit(e) {
         <h3>LOGO</h3>
       </div>
       <div id="user-info" v-if="user.type != 'anonymous'">
-        <h2>Welcome, {{ user.email }}</h2>
-        ligma
-        <button>Log Out</button>
+        <h2>Welcome, {{ user.username }}</h2>
+        Idk add some more stuff here
+        <button @click="logout">Log Out</button>
       </div>
       <div id="signup" v-else-if="showInfo == 'signup'">
         <h2 style="text-align: center">Sign Up</h2>
@@ -152,6 +180,10 @@ async function loginSubmit(e) {
           <div>
             <label for="email">Email</label>
             <input type="email" id="email" name="email" :value="formValues.email" @change="updateFormValues" :disabled="disableForm" />
+          </div>
+          <div>
+            <label for="username">Username</label>
+            <input type="text" id="username" name="username" :value="formValues.username" @change="updateFormValues" :disabled="disableForm" />
           </div>
           <div>
             <label for="password">Password</label>

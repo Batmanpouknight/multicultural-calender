@@ -1,7 +1,8 @@
 <script setup>
-import { ref, reactive, onBeforeMount } from 'vue'
+import { ref, reactive, onBeforeMount, onMounted, computed } from 'vue'
 import Header from './components/AppHeader.vue'
 import AccountComp from './components/AccountComp.vue'
+import Cookies from 'js-cookie'
 
 const months = ref([])
 
@@ -19,6 +20,15 @@ const countries = ref([
 const daySelected = ref(new Date().getDate())
 
 const currentMonth = ref(new Date().getMonth())
+
+const user = reactive({
+  id: '',
+  username: '',
+  email: '',
+  type: 'anonymous',
+})
+
+const loggedIn = computed(() => user.id !== '')
 
 const showAccountOverlay = ref(false)
 const showSideBar = ref(true)
@@ -107,7 +117,18 @@ function handleCalendarTouch(e) {
     firstTouch = {}
   }
 }
-
+onMounted(() => {
+  const id = Cookies.get('id')
+  const email = Cookies.get('email')
+  const username = Cookies.get('username')
+  const type = Cookies.get('type')
+  if (id && email && username && type) {
+    user.id = id
+    user.email = email
+    user.username = username
+    user.type = type
+  }
+})
 onBeforeMount(async () => {
   try {
     // const res = await fetch('http://localhost:3000/months')
@@ -131,6 +152,7 @@ onBeforeMount(async () => {
         v-model:animateSideBar="animateSideBar"
         v-model:animateCalender="animateCalender"
         v-model:gridArea="gridArea"
+        :loggedIn="loggedIn"
         :months="months"
         :currentMonth="currentMonth"
         @changeMonth="changeMonth"
@@ -162,12 +184,13 @@ onBeforeMount(async () => {
         :daySelected="daySelected"
         :currentMonth="currentMonth"
         :countries="countries"
+        :loggedIn="loggedIn"
         @changeMonth="changeMonth"
         @toggleCountry="toggleCountry"
       />
     </div>
     <div class="account-overlay" v-if="showAccountOverlay">
-      <AccountComp @hideAccountOverlay="showAccountOverlay = false" />
+      <AccountComp v-model:user="user" @hideAccountOverlay="showAccountOverlay = false" />
     </div>
   </div>
   <div v-else-if="loadingApp">Loading...</div>

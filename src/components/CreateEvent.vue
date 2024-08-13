@@ -1,7 +1,7 @@
 <script setup>
 import { computed, ref, reactive } from 'vue'
 
-const props = defineProps(['daySelected', 'currentMonth', 'countries'])
+const props = defineProps(['daySelected', 'currentMonth', 'countries', 'loggedIn'])
 const emit = defineEmits(['toggleCountry', 'changeMonth'])
 const months = defineModel('months')
 const nameError = ref(null)
@@ -158,7 +158,7 @@ async function addEvent(event) {
       <button @click="$emit('changeMonth', new Date().getMonth())">Go to current month</button>
     </div>
 
-    <div class="new-event">
+    <div class="new-event" v-if="loggedIn">
       <form @submit.prevent="addEvent">
         <label for="name-input">Name: </label>
         <input type="text" class="name-input" name="name-input" @change="nameError = null" />
