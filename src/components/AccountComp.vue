@@ -47,7 +47,7 @@ async function signupSubmit() {
       .email({ tlds: { allow: ['com', 'ca', 'net'] } })
       .required(),
     username: Joi.string().alphanum().min(3).max(12).required(),
-    password: Joi.string().pattern(new RegExp('^[a-zA-Z0-9]{3,20}$')).required(),
+    password: Joi.string().pattern(new RegExp('^[a-zA-Z0-9!@#$*]{3,20}$')).required(),
   })
   const { error } = schema.validate({ email, username, password }, { abortEarly: false })
   if (error) {
