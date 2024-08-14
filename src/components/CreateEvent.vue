@@ -122,6 +122,9 @@ async function addEvent(event) {
       description,
       country,
     })
+    event.target['name-input'].value = ''
+    event.target['descriptionInput'].value = ''
+    event.target['selectCountry'].value = 'default'
   } catch (error) {
     console.error(error)
     eventResponse.show = true
