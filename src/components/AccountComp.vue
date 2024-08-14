@@ -113,7 +113,7 @@ async function loginSubmit() {
   }
   if (errors.value.length == 0) {
     try {
-      const response = await fetch('https://calender-database.onrender.com/users/signup', {
+      const response = await fetch('https://calender-database.onrender.com/users/login', {
         // const response = await fetch('http://localhost:3000/users/login', {
         method: 'POST',
         headers: {

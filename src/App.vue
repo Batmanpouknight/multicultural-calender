@@ -34,20 +34,7 @@ const showAccountOverlay = ref(false)
 const showSideBar = ref(true)
 const mobileMode = ref(false)
 
-const sideBarStyle = reactive({
-  width: '15vw',
-  height: '92vh',
-  'background-color': 'white',
-  // order: 2,
-  zIndex: 1,
-})
-
-const calenderStyle = reactive({
-  height: '92vh',
-  width: '85vw',
-  // order: 3,
-  zIndex: 0,
-})
+const calenderStyle = reactive({})
 
 const gridArea = reactive({
   'grid-template-columns': '15vw 85vw',
@@ -146,8 +133,6 @@ onBeforeMount(async () => {
       <Header
         v-if="months.length > 0"
         v-model:showSideBar="showSideBar"
-        v-model:sideBarStyle="sideBarStyle"
-        v-model:calenderStyle="calenderStyle"
         v-model:mobileMode="mobileMode"
         v-model:animateSideBar="animateSideBar"
         v-model:animateCalender="animateCalender"
@@ -178,7 +163,7 @@ onBeforeMount(async () => {
         @changeDay="changeDay"
       />
     </div>
-    <div class="create-event" :style="sideBarStyle" :class="animateSideBar">
+    <div class="create-event" :class="animateSideBar" v-show="showSideBar">
       <CreateEvent
         :months="months"
         :daySelected="daySelected"
@@ -212,10 +197,6 @@ body {
 }
 
 #container {
-  /* display: flex;
-  position: relative;
-  justify-content: flex-start;
-  flex-wrap: wrap; */
   display: grid;
   grid-template-areas:
     'header header'
@@ -237,10 +218,15 @@ body {
 
 .calender {
   grid-area: calender;
+  width: 100%;
+  height: 100%;
 }
 
 .create-event {
   grid-area: create-event;
+  width: 100%;
+  height: 100%;
+  background-color: white;
 }
 
 .account-overlay {
@@ -251,12 +237,11 @@ body {
   background-color: rgba(0, 0, 0, 0.5);
   width: 100vw;
   height: 100vh;
-  z-index: 1001;
+  z-index: 1002;
 }
 
 @keyframes stretchCalendar {
   0% {
-    width: 85vw;
   }
   100% {
     transform: scaleX(1.176470588);
@@ -285,12 +270,20 @@ body {
   animation: 200ms linear slideSide;
 }
 .slideOut_animation {
-  animation: 200ms linear reverse slideSide;
+  animation: 190ms linear reverse slideSide;
 }
 
 @media screen and (max-width: 800px) {
   #container {
-    grid-template-areas: 'header' 'calender';
+    grid-template-areas:
+      'header header'
+      'calender calender';
+  }
+  .create-event {
+    display: none;
+    position: absolute;
+    width: 50vw;
+    top: 8vh;
   }
 }
 </style>

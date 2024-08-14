@@ -1,5 +1,5 @@
 <script setup>
-import { computed, ref, onMounted } from 'vue'
+import { computed, ref, onMounted, reactive } from 'vue'
 
 const props = defineProps(['months', 'daySelected', 'currentMonth', 'countries'])
 const emit = defineEmits(['changeMonth', 'changeDay'])
@@ -12,6 +12,8 @@ const days = ref(dayShortStrings)
 const showOverlay = ref(false)
 
 const showEventDetailsForDay = ref(new Date().getDate())
+
+const eventDetailsLocation = reactive({ top: 0, left: 0 })
 
 /**
  * returns the height of the items in the calender grid
@@ -65,6 +67,20 @@ function getEventsForADay(index) {
   return events
 }
 
+function showEventDetails(event, e) {
+  showOverlay.value = true
+  showEventDetailsForDay.value = event
+  console.log(e)
+  eventDetailsLocation.top = Number((e.y / window.innerHeight) * 100) + '%'
+  eventDetailsLocation.left = Number((e.x / window.innerWidth) * 100) + '%'
+  if (e.x > window.innerWidth / 2) {
+    eventDetailsLocation.left = Number((e.x / window.innerWidth) * 100 - 20) + '%'
+  }
+  if (e.y > window.innerHeight / 2) {
+    eventDetailsLocation.top = Number((e.y / window.innerHeight) * 100 - 20) + '%'
+  }
+}
+
 onMounted(() => {
   if (window.innerWidth < 800) days.value = dayShortStrings
   else days.value = dayFullStrings
@@ -91,19 +107,14 @@ onMounted(() => {
     >
       <div v-if="index < 7">{{ days[index] }}</div>
       {{ getDayObject(index).number }}
-      <div
-        v-for="event in getEventsForADay(index)"
-        class="event-name"
-        :key="event.id"
-        @click="(showOverlay = true), (showEventDetailsForDay = event)"
-      >
+      <div v-for="event in getEventsForADay(index)" class="event-name" :key="event.id" @click="showEventDetails(event, $event)">
         {{ event.name }}
       </div>
     </div>
   </div>
 
-  <div v-if="showOverlay">
-    <div class="event-details">
+  <div class="overlay" @click.self="showOverlay = false" v-if="showOverlay">
+    <div class="event-details" :style="eventDetailsLocation">
       <div class="x-button" @click="showOverlay = false">x</div>
       <div class="event-info">
         info: <br />
@@ -134,11 +145,10 @@ onMounted(() => {
 }
 .event-name {
   background-color: lightcoral;
-  /* margin: 10px; */
+  margin: 5px;
   padding-left: 5px;
-  padding-right: 5px;
   border-radius: 5px;
-  font-size: 12px;
+  font-size: 14px;
   text-align: left;
   white-space: nowrap;
   overflow: hidden;
@@ -165,18 +175,26 @@ onMounted(() => {
   overflow: hidden;
 }
 
-.event-details {
+.overlay {
   position: fixed;
-  height: 500px;
-  width: 500px;
-  z-index: 1000;
-  background-color: orange;
+  height: 100vh;
+  width: 100vw;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
+  z-index: 1000;
+}
+
+.event-details {
+  position: fixed;
+  height: fit-content;
+  width: 400px;
+  z-index: 1001;
+  background-color: orange;
+  padding: 30px;
+  /* transform: translate(-50%, -50%); */
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   border-radius: 10px;
-  /* text-align: center; */
 }
 
 .x-button {
@@ -193,9 +211,6 @@ onMounted(() => {
 }
 .x-button:hover {
   background-color: red;
-}
-.event-info {
-  margin-top: 50px;
 }
 
 @media (max-width: 800px) {
