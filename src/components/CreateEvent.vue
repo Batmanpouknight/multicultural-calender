@@ -4,10 +4,14 @@ import { computed, ref, reactive } from 'vue'
 const props = defineProps(['daySelected', 'currentMonth', 'countries', 'loggedIn'])
 const emit = defineEmits(['toggleCountry', 'changeMonth'])
 const months = defineModel('months')
-const nameError = ref(null)
-const descriptionError = ref(null)
-const countryError = ref(null)
-const dateError = ref(null)
+
+const errors = reactive({
+  name: null,
+  description: null,
+  country: null,
+  date: null,
+})
+
 const sendingEvent = ref(false)
 const eventResponse = reactive({ show: false, status: null, message: null })
 
@@ -55,31 +59,31 @@ async function addEvent(event) {
 
   console.log(dayNumber, dayIndex)
 
-  nameError.value = null
-  descriptionError.value = null
-  countryError.value = null
-  dateError.value = null
+  errors.name = null
+  errors.description = null
+  errors.country = null
+  errors.date = null
 
   let error = false
   if (!name) {
-    nameError.value = 'Name is required'
+    errors.name = 'Name is required'
     error = true
   }
   if (!description) {
-    descriptionError.value = 'Description is required'
+    errors.description = 'Description is required'
     error = true
   }
   if (country == 'default') {
-    countryError.value = 'Country is required'
+    errors.country = 'Country is required'
     error = true
   }
   if (!(month >= 0 && month <= 11)) {
-    dateError.value = 'Invalid month'
+    errors.date = 'Invalid month'
     error = true
   }
 
   if (dayNumber > months.value[month].days || dayNumber < 0) {
-    dateError.value = 'Invalid day'
+    errors.date = 'Invalid day'
     error = true
   }
   if (error) {
@@ -161,8 +165,8 @@ async function addEvent(event) {
     <div class="new-event" v-if="loggedIn">
       <form @submit.prevent="addEvent">
         <label for="name-input">Name: </label>
-        <input type="text" class="name-input" name="name-input" @change="nameError = null" />
-        <div v-if="nameError" class="error">{{ nameError }}</div>
+        <input type="text" class="name-input" name="name-input" @change="errors.name = null" />
+        <div v-if="errors.name" class="error">{{ errors.name }}</div>
         <br /><br />
 
         <input type="number" name="day-input" class="day-input" :value="daySelected" />/
@@ -171,24 +175,24 @@ async function addEvent(event) {
             {{ month.name }}
           </option>
         </select>
-        <div v-if="dateError" class="error">{{ dateError }}</div>
+        <div v-if="errors.date" class="error">{{ errors.date }}</div>
 
         <br /><br />
 
         <label for="descriptionInput">Description: </label>
-        <textarea name="descriptionInput" id="descriptionInput" @change="descriptionError = null"></textarea>
-        <div v-if="descriptionError" class="error">{{ descriptionError }}</div>
+        <textarea name="descriptionInput" id="descriptionInput" @change="errors.description = null"></textarea>
+        <div v-if="errors.description" class="error">{{ errors.description }}</div>
 
         <br /><br />
 
         <label for="selectCountry">Select Country: </label>
-        <select name="selectCountry" id="selectCountry" @change="countryError = null">
+        <select name="selectCountry" id="selectCountry" @change="errors.country = null">
           <option value="default" selected disabled>Choose an option</option>
           <option v-for="(country, index) in countries" :key="index" :value="index">
             {{ country.name }}
           </option>
         </select>
-        <div v-if="countryError" class="error">{{ countryError }}</div>
+        <div v-if="errors.country" class="error">{{ errors.country }}</div>
 
         <br /><br />
 
@@ -258,59 +262,5 @@ input[type='checkbox'].custom-checkbox {
 select {
   background-color: rgba(0, 0, 0, 0.22);
   border: none;
-}
-
-.spinner {
-  animation: rotator 1.4s linear infinite;
-}
-
-@keyframes rotator {
-  0% {
-    transform: rotate(0deg);
-  }
-  100% {
-    transform: rotate(270deg);
-  }
-}
-
-.path {
-  stroke-dasharray: 187;
-  stroke-dashoffset: 0;
-  transform-origin: center;
-  animation:
-    dash 1.4s ease-in-out infinite,
-    colors 5.6s ease-in-out infinite;
-}
-
-@keyframes colors {
-  0% {
-    stroke: #4285f4;
-  }
-  25% {
-    stroke: #de3e35;
-  }
-  50% {
-    stroke: #f7c223;
-  }
-  75% {
-    stroke: #1b9a59;
-  }
-  100% {
-    stroke: #4285f4;
-  }
-}
-
-@keyframes dash {
-  0% {
-    stroke-dashoffset: 187;
-  }
-  50% {
-    stroke-dashoffset: 46.75;
-    transform: rotate(135deg);
-  }
-  100% {
-    stroke-dashoffset: 187;
-    transform: rotate(450deg);
-  }
 }
 </style>

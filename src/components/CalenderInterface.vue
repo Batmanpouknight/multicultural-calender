@@ -7,7 +7,7 @@ const emit = defineEmits(['changeMonth', 'changeDay'])
 const dayFullStrings = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
 const dayShortStrings = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 
-const days = ref(dayShortStrings)
+const days = ref(window.innerWidth < 800 ? dayShortStrings : dayFullStrings)
 
 const showOverlay = ref(false)
 
@@ -82,12 +82,8 @@ function showEventDetails(event, e) {
 }
 
 onMounted(() => {
-  if (window.innerWidth < 800) days.value = dayShortStrings
-  else days.value = dayFullStrings
-
   window.addEventListener('resize', () => {
-    if (window.innerWidth < 800) days.value = dayShortStrings
-    else days.value = dayFullStrings
+    window.innerWidth < 800 ? (days.value = dayShortStrings) : (days.value = dayFullStrings)
   })
 })
 </script>

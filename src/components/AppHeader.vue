@@ -7,15 +7,12 @@ const emit = defineEmits(['changeMonth', 'showAccountOverlay'])
 
 const showSideBar = defineModel('showSideBar')
 const mobileMode = defineModel('mobileMode')
-const animateSideBar = defineModel('animateSideBar')
-const animateCalender = defineModel('animateCalender')
-const gridArea = defineModel('gridArea')
 
 /**
  * returns the month object based on the current month
  * @returns {object} the month object
  */
-const getCurrnetMonthObject = computed(() => {
+const currnetMonthObject = computed(() => {
   return props.months[props.currentMonth]
 })
 
@@ -24,56 +21,10 @@ function changeMonthButton(direction) {
 }
 
 function toggleSideBar() {
-  if (showSideBar.value) {
-    animateSideBar.value.slideOut_animation = true
-    animateCalender.value.stretch_animation = true
-    setTimeout(() => {
-      gridArea.value['grid-template-columns'] = '0vw 100vw'
-      showSideBar.value = false
-      animateSideBar.value.slideOut_animation = false
-      animateCalender.value.stretch_animation = false
-    }, 200)
-  } else {
-    showSideBar.value = true
-    animateSideBar.value.slideIn_animation = true
-    animateCalender.value.shrink_animation = true
-    gridArea.value['grid-template-columns'] = '15vw 85vw'
-    setTimeout(() => {
-      animateCalender.value.shrink_animation = false
-      animateSideBar.value.slideIn_animation = false
-    }, 200)
-  }
-}
-
-function overlapSideBar() {
-  if (showSideBar.value) {
-    showSideBar.value = false
-    animateSideBar.value.slideOut_animation = true
-    setTimeout(() => {
-      animateSideBar.value.slideOut_animation = false
-    }, 200)
-  } else {
-    showSideBar.value = true
-    animateSideBar.value.slideIn_animation = true
-    setTimeout(() => {
-      animateSideBar.value.slideIn_animation = false
-    }, 200)
-  }
-}
-
-function handleHide() {
-  if (mobileMode.value) overlapSideBar()
-  else toggleSideBar()
+  showSideBar.value = !showSideBar.value
 }
 
 onMounted(() => {
-  if (window.innerWidth < 800) {
-    mobileMode.value = true
-    showSideBar.value = false
-  } else {
-    mobileMode.value = false
-    showSideBar.value = true
-  }
   window.addEventListener('resize', () => {
     if (window.innerWidth < 800) {
       mobileMode.value = true
@@ -91,11 +42,11 @@ onMounted(() => {
     <div class="month">
       <button @click="changeMonthButton(-1)">Prev</button>
       <h1 class="monthName">
-        {{ getCurrnetMonthObject.name }}
+        {{ currnetMonthObject.name }}
       </h1>
       <button @click="changeMonthButton(1)">Next</button>
     </div>
-    <img src="./icons/menu.svg" alt="Menu Icon" id="menu-icon" @click="handleHide" />
+    <img src="./icons/menu.svg" alt="Menu Icon" id="menu-icon" @click="toggleSideBar" />
     <div id="account" @click="emit('showAccountOverlay')"><span v-if="loggedIn">Account</span> <span v-else>Signup/Login</span></div>
   </div>
 </template>
@@ -119,10 +70,6 @@ onMounted(() => {
   width: 50%;
 }
 
-.monthName {
-  display: inline;
-}
-
 .month > button {
   height: 40px;
   width: 80px;
@@ -139,9 +86,6 @@ onMounted(() => {
 }
 
 #menu-icon {
-  /* position: absolute;
-  left: 20px;
-  width: 40px; */
   order: 1;
   cursor: pointer;
 }

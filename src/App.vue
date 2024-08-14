@@ -1,5 +1,5 @@
 <script setup>
-import { ref, reactive, onBeforeMount, onMounted, computed } from 'vue'
+import { ref, reactive, onBeforeMount, computed, watch } from 'vue'
 import Header from './components/AppHeader.vue'
 import AccountComp from './components/AccountComp.vue'
 import Cookies from 'js-cookie'
@@ -31,8 +31,9 @@ const user = reactive({
 const loggedIn = computed(() => user.id !== '')
 
 const showAccountOverlay = ref(false)
-const showSideBar = ref(true)
-const mobileMode = ref(false)
+const tempShowSideBar = ref(false)
+const showSideBar = ref(window.innerWidth > 800)
+const mobileMode = ref(window.innerWidth < 800)
 
 const calenderStyle = reactive({})
 
@@ -104,7 +105,47 @@ function handleCalendarTouch(e) {
     firstTouch = {}
   }
 }
-onMounted(() => {
+
+watch(showSideBar, (newVal) => {
+  console.log('showSideBar', newVal, mobileMode.value)
+  if (mobileMode.value) {
+    if (newVal) {
+      animateSideBar.slideIn_animation = true
+      setTimeout(() => {
+        animateSideBar.slideIn_animation = false
+      }, 200)
+    } else {
+      tempShowSideBar.value = true
+      animateSideBar.slideOut_animation = true
+      setTimeout(() => {
+        tempShowSideBar.value = false
+        animateSideBar.slideOut_animation = false
+      }, 180)
+    }
+  } else {
+    if (newVal) {
+      animateSideBar.slideIn_animation = true
+      animateCalender.shrink_animation = true
+      gridArea['grid-template-columns'] = '15vw 85vw'
+      setTimeout(() => {
+        animateCalender.shrink_animation = false
+        animateSideBar.slideIn_animation = false
+      }, 200)
+    } else {
+      tempShowSideBar.value = true
+      animateSideBar.slideOut_animation = true
+      animateCalender.stretch_animation = true
+      setTimeout(() => {
+        tempShowSideBar.value = false
+        gridArea['grid-template-columns'] = '0vw 100vw'
+        animateSideBar.slideOut_animation = false
+        animateCalender.stretch_animation = false
+      }, 180)
+    }
+  }
+})
+
+function cookieCheck() {
   const id = Cookies.get('id')
   const email = Cookies.get('email')
   const username = Cookies.get('username')
@@ -115,8 +156,9 @@ onMounted(() => {
     user.username = username
     user.type = type
   }
-})
-onBeforeMount(async () => {
+}
+
+async function fetchCalendar() {
   try {
     // const res = await fetch('http://localhost:3000/months')
     const res = await fetch('https://calender-database.onrender.com/months')
@@ -125,6 +167,11 @@ onBeforeMount(async () => {
     console.error('Server did not respond: ', error)
   }
   loadingApp.value = false
+}
+
+onBeforeMount(async () => {
+  cookieCheck()
+  await fetchCalendar()
 })
 </script>
 <template>
@@ -134,9 +181,6 @@ onBeforeMount(async () => {
         v-if="months.length > 0"
         v-model:showSideBar="showSideBar"
         v-model:mobileMode="mobileMode"
-        v-model:animateSideBar="animateSideBar"
-        v-model:animateCalender="animateCalender"
-        v-model:gridArea="gridArea"
         :loggedIn="loggedIn"
         :months="months"
         :currentMonth="currentMonth"
@@ -163,7 +207,7 @@ onBeforeMount(async () => {
         @changeDay="changeDay"
       />
     </div>
-    <div class="create-event" :class="animateSideBar" v-show="showSideBar">
+    <div class="create-event" :class="animateSideBar" v-show="showSideBar || tempShowSideBar">
       <CreateEvent
         :months="months"
         :daySelected="daySelected"
@@ -178,8 +222,13 @@ onBeforeMount(async () => {
       <AccountComp v-model:user="user" @hideAccountOverlay="showAccountOverlay = false" />
     </div>
   </div>
-  <div v-else-if="loadingApp">Loading...</div>
-  <div v-else>Something went wrong</div>
+  <div id="loading" v-else-if="loadingApp">
+    <h1>Loading...</h1>
+    <svg class="spinner" viewBox="0 0 66 66" xmlns="http://www.w3.org/2000/svg">
+      <circle class="path" fill="none" stroke-width="6" stroke-linecap="round" cx="33" cy="33" r="30"></circle>
+    </svg>
+  </div>
+  <div id="page-error" v-else>Something went wrong</div>
 </template>
 <style>
 @import url('https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css');
@@ -203,6 +252,29 @@ body {
     'create-event calender';
   grid-template-rows: 8vh 92vh;
   overflow: hidden;
+}
+
+#loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  font-size: 2.5rem;
+  height: 100vh;
+  width: 100vw;
+}
+
+#loading > * {
+  margin: 50px;
+}
+
+#page-error {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  width: 100vw;
+  font-size: 3rem;
 }
 
 .header {
@@ -280,10 +352,69 @@ body {
       'calender calender';
   }
   .create-event {
-    display: none;
+    /* display: none; */
     position: absolute;
     width: 50vw;
     top: 8vh;
+  }
+}
+
+.spinner {
+  animation: rotator 1.4s linear infinite;
+}
+
+#loading .spinner {
+  height: 150px;
+  width: 150px;
+}
+
+@keyframes rotator {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(270deg);
+  }
+}
+
+.path {
+  stroke-dasharray: 187;
+  stroke-dashoffset: 0;
+  transform-origin: center;
+  animation:
+    dash 1.4s ease-in-out infinite,
+    colors 5.6s ease-in-out infinite;
+}
+
+@keyframes colors {
+  0% {
+    stroke: #4285f4;
+  }
+  25% {
+    stroke: #de3e35;
+  }
+  50% {
+    stroke: #f7c223;
+  }
+  75% {
+    stroke: #1b9a59;
+  }
+  100% {
+    stroke: #4285f4;
+  }
+}
+
+@keyframes dash {
+  0% {
+    stroke-dashoffset: 187;
+  }
+  50% {
+    stroke-dashoffset: 46.75;
+    transform: rotate(135deg);
+  }
+  100% {
+    stroke-dashoffset: 187;
+    transform: rotate(450deg);
   }
 }
 </style>
