@@ -9,9 +9,9 @@ const user = defineModel('user')
 const emit = defineEmits(['hideAccountOverlay'])
 
 const formValues = reactive({
-  email: '',
-  password: '',
-  username: '',
+  'email': '',
+  'password': '',
+  'username': '',
   'confirm-password': '',
 })
 
@@ -63,8 +63,8 @@ async function signupSubmit() {
   if (errors.value.length === 0) {
     console.log('no errors')
     try {
-      // const response = await fetch('https://calender-database.onrender.com/users/signup', {
-      const response = await fetch('http://localhost:3000/users/signup', {
+      const response = await fetch('https://calender-database.onrender.com/users/signup', {
+        // const response = await fetch('http://localhost:3000/users/signup', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -197,8 +197,7 @@ function logout() {
               name="confirm-password"
               :value="formValues['confirm-password']"
               @change="updateFormValues"
-              :disabled="disableForm"
-            />
+              :disabled="disableForm" />
           </div>
           <button class="submit-button" type="submit" :disabled="disableForm">Sign Up</button>
           <button class="change-form-button" type="button" @click="showInfo = 'login'" :disabled="disableForm">Log In</button>

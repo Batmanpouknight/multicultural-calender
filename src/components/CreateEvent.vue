@@ -2,7 +2,7 @@
 import { computed, ref, reactive } from 'vue'
 
 const props = defineProps(['daySelected', 'currentMonth', 'countries', 'loggedIn'])
-const emit = defineEmits(['toggleCountry', 'changeMonth'])
+const emit = defineEmits(['toggleCountry'])
 const months = defineModel('months')
 
 const errors = reactive({
@@ -30,10 +30,6 @@ function getOffSetOfMonth(month) {
 const getCurrentDay = computed(() => {
   return getMonth.value.dates[props.daySelected + getOffSetOfMonth(getMonth.value)]
 })
-
-function handleMonthChange(event) {
-  emit('changeMonth', event.target.value)
-}
 
 const getEventsForSelectedDay = computed(() => {
   let events = []

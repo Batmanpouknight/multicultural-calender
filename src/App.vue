@@ -211,7 +211,6 @@ onBeforeMount(async () => {
         :currentMonth="currentMonth"
         :countries="countries"
         :loggedIn="loggedIn"
-        @changeMonth="changeMonth"
         @toggleCountry="toggleCountry" />
     </div>
     <div class="account-overlay" v-if="showAccountOverlay">
