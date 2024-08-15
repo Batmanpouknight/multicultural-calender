@@ -63,8 +63,8 @@ async function signupSubmit() {
   if (errors.value.length === 0) {
     console.log('no errors')
     try {
-      const response = await fetch('https://calender-database.onrender.com/users/signup', {
-        // const response = await fetch('http://localhost:3000/users/signup', {
+      // const response = await fetch('https://calender-database.onrender.com/users/signup', {
+      const response = await fetch('http://localhost:3000/users/signup', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

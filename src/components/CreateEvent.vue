@@ -154,50 +154,43 @@ async function addEvent(event) {
       </div>
     </div>
 
-    <div class="changeMonth">
-      <select name="month" id="month" @change="handleMonthChange">
-        <option v-for="(month, index) in months" :key="index" :value="index" :selected="index == props.currentMonth">
-          {{ month.name }}
-        </option>
-      </select>
-      <br />
-      <br />
-      <button @click="$emit('changeMonth', new Date().getMonth())">Go to current month</button>
-    </div>
-
     <div class="new-event" v-if="loggedIn">
       <form @submit.prevent="addEvent">
-        <label for="name-input">Name: </label>
-        <input type="text" class="name-input" name="name-input" @change="errors.name = null" />
-        <div v-if="errors.name" class="error">{{ errors.name }}</div>
-        <br /><br />
+        <div style="margin-top: 0">
+          <label for="name-input">Name: </label>
+          <input type="text" class="name-input" name="name-input" @change="errors.name = null" />
+          <div v-if="errors.name" class="error">{{ errors.name }}</div>
+        </div>
 
-        <input type="number" name="day-input" class="day-input" :value="daySelected" />/
-        <select name="month-input" class="month-input">
-          <option v-for="(month, index) in months" :key="index" :value="index" :selected="index == props.currentMonth">
-            {{ month.name }}
-          </option>
-        </select>
-        <div v-if="errors.date" class="error">{{ errors.date }}</div>
+        <div>
+          <div>
+            <input type="number" name="day-input" class="day-input" :value="daySelected" />/
+            <select name="month-input" class="month-input">
+              <option v-for="(month, index) in months" :key="index" :value="index" :selected="index == props.currentMonth">
+                {{ month.name }}
+              </option>
+            </select>
+          </div>
 
-        <br /><br />
+          <div v-if="errors.date" class="error">{{ errors.date }}</div>
+        </div>
 
-        <label for="descriptionInput">Description: </label>
-        <textarea name="descriptionInput" id="descriptionInput" @change="errors.description = null"></textarea>
-        <div v-if="errors.description" class="error">{{ errors.description }}</div>
+        <div>
+          <label for="descriptionInput">Description: </label>
+          <textarea name="descriptionInput" id="descriptionInput" @change="errors.description = null"></textarea>
+          <div v-if="errors.description" class="error">{{ errors.description }}</div>
+        </div>
 
-        <br /><br />
-
-        <label for="selectCountry">Select Country: </label>
-        <select name="selectCountry" id="selectCountry" @change="errors.country = null">
-          <option value="default" selected disabled>Choose an option</option>
-          <option v-for="(country, index) in countries" :key="index" :value="index">
-            {{ country.name }}
-          </option>
-        </select>
-        <div v-if="errors.country" class="error">{{ errors.country }}</div>
-
-        <br /><br />
+        <div>
+          <label for="selectCountry">Select Country: </label>
+          <select name="selectCountry" id="selectCountry" @change="errors.country = null">
+            <option value="default" selected disabled>Choose an option</option>
+            <option v-for="(country, index) in countries" :key="index" :value="index">
+              {{ country.name }}
+            </option>
+          </select>
+          <div v-if="errors.country" class="error">{{ errors.country }}</div>
+        </div>
 
         <button type="submit" id="submit-event">Add Event</button>
         <svg v-if="sendingEvent" class="spinner" width="30px" height="30px" viewBox="0 0 66 66" xmlns="http://www.w3.org/2000/svg">
@@ -223,15 +216,28 @@ input[type='checkbox'].custom-checkbox {
 .error {
   width: fit-content;
   margin-top: 5px;
-  background-color: red;
-  color: white;
+  color: red;
 }
 
 .success {
   width: fit-content;
   margin-top: 5px;
-  background-color: green;
-  color: white;
+  color: green;
+}
+
+form > div {
+  margin-top: 30px;
+  display: flex;
+  flex-direction: column;
+}
+
+form > u {
+  cursor: pointer;
+}
+
+form {
+  display: flex;
+  flex-direction: column;
 }
 
 .day-input {
@@ -243,6 +249,10 @@ input[type='checkbox'].custom-checkbox {
   font-size: 12px;
 }
 
+#selectCountry {
+  width: fit-content;
+}
+
 #submit-event {
   background-color: #4caf50;
   color: white;
@@ -251,6 +261,7 @@ input[type='checkbox'].custom-checkbox {
   border: none;
   border-radius: 4px;
   cursor: pointer;
+  margin-top: 20px;
 }
 
 #submit-event:disabled {

@@ -99,8 +99,7 @@ onMounted(() => {
         notThisMonth: !getDayObject(index).dayIsInThisMonth,
         selected: isSelected(index),
       }"
-      @click.self="emit('changeDay', getDayObject(index))"
-    >
+      @click.self="emit('changeDay', getDayObject(index))">
       <div v-if="index < 7">{{ days[index] }}</div>
       {{ getDayObject(index).number }}
       <div v-for="event in getEventsForADay(index)" class="event-name" :key="event.id" @click="showEventDetails(event, $event)">
@@ -113,7 +112,6 @@ onMounted(() => {
     <div class="event-details" :style="eventDetailsLocation">
       <div class="x-button" @click="showOverlay = false">x</div>
       <div class="event-info">
-        info: <br />
         name: {{ showEventDetailsForDay.name }} <br />
         country: {{ props.countries[showEventDetailsForDay.country].name }} <br />
         description: {{ showEventDetailsForDay.description }}

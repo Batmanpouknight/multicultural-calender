@@ -58,7 +58,7 @@ function changeMonth(newMonth) {
   if (newMonth > currentMonth.value) {
     animateCalender.animate__slideInRight = true
     animateCalender.animate__slideInLeft = false
-  } else {
+  } else if (newMonth < currentMonth.value) {
     animateCalender.animate__slideInRight = false
     animateCalender.animate__slideInLeft = true
   }
@@ -185,8 +185,7 @@ onBeforeMount(async () => {
         :months="months"
         :currentMonth="currentMonth"
         @changeMonth="changeMonth"
-        @showAccountOverlay="showAccountOverlay = true"
-      />
+        @showAccountOverlay="showAccountOverlay = true" />
     </div>
 
     <div
@@ -196,16 +195,14 @@ onBeforeMount(async () => {
       @touchstart="handleCalendarTouch"
       @touchmove="handleCalendarTouch"
       @touchend="handleCalendarTouch"
-      @touchcancel="handleCalendarTouch"
-    >
+      @touchcancel="handleCalendarTouch">
       <Calender
         v-model:months="months"
         :daySelected="daySelected"
         :currentMonth="currentMonth"
         :countries="countries"
         @changeMonth="changeMonth"
-        @changeDay="changeDay"
-      />
+        @changeDay="changeDay" />
     </div>
     <div class="create-event" :class="animateSideBar" v-show="showSideBar || tempShowSideBar">
       <CreateEvent
@@ -215,8 +212,7 @@ onBeforeMount(async () => {
         :countries="countries"
         :loggedIn="loggedIn"
         @changeMonth="changeMonth"
-        @toggleCountry="toggleCountry"
-      />
+        @toggleCountry="toggleCountry" />
     </div>
     <div class="account-overlay" v-if="showAccountOverlay">
       <AccountComp v-model:user="user" @hideAccountOverlay="showAccountOverlay = false" />

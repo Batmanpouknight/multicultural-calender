@@ -1,5 +1,5 @@
 <script setup>
-import { onMounted, computed } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 
 const props = defineProps(['months', 'currentMonth', 'loggedIn'])
 
@@ -7,6 +7,8 @@ const emit = defineEmits(['changeMonth', 'showAccountOverlay'])
 
 const showSideBar = defineModel('showSideBar')
 const mobileMode = defineModel('mobileMode')
+
+const showMonthDropdown = ref(false)
 
 /**
  * returns the month object based on the current month
@@ -18,6 +20,28 @@ const currnetMonthObject = computed(() => {
 
 function changeMonthButton(direction) {
   emit('changeMonth', props.currentMonth + direction)
+}
+
+function changeMonth(month) {
+  showMonthDropdown.value = false
+  emit('changeMonth', month)
+}
+
+function toggleDropdown() {
+  if (showMonthDropdown.value) {
+    document.getElementById('dropdown-icon').style.transform = 'rotate(0deg)'
+    document.getElementById('dropdown-icon').classList.add('animate-rotate-reverse')
+    setTimeout(() => {
+      document.getElementById('dropdown-icon').classList.remove('animate-rotate-reverse')
+    }, 200)
+  } else {
+    document.getElementById('dropdown-icon').style.transform = 'rotate(180deg)'
+    document.getElementById('dropdown-icon').classList.add('animate-rotate')
+    setTimeout(() => {
+      document.getElementById('dropdown-icon').classList.remove('animate-rotate')
+    }, 200)
+  }
+  showMonthDropdown.value = !showMonthDropdown.value
 }
 
 function toggleSideBar() {
@@ -41,9 +65,17 @@ onMounted(() => {
   <div id="header-container">
     <div class="month">
       <button @click="changeMonthButton(-1)">Prev</button>
-      <h1 class="monthName">
-        {{ currnetMonthObject.name }}
-      </h1>
+      <div class="monthName" @click="toggleDropdown">
+        <h1>
+          {{ currnetMonthObject.name }}
+        </h1>
+        <img src="./icons/arrow_drop_down.svg" alt="dropdown arrow" id="dropdown-icon" />
+      </div>
+
+      <div id="month-dropdown" v-show="showMonthDropdown">
+        <div @click="changeMonth(new Date().getMonth())">Current Month</div>
+        <div v-for="(month, index) in months" :key="month.id" @click="changeMonth(index)">{{ month.name }}</div>
+      </div>
       <button @click="changeMonthButton(1)">Next</button>
     </div>
     <img src="./icons/menu.svg" alt="Menu Icon" id="menu-icon" @click="toggleSideBar" />
@@ -95,7 +127,61 @@ onMounted(() => {
   cursor: pointer;
 }
 
+.monthName {
+  display: flex;
+  cursor: pointer;
+}
+
+.monthName > h1 {
+  margin: 0;
+  display: inline;
+}
+
+.monthName > img {
+  height: 50px;
+  width: 50px;
+}
+
+#month-dropdown {
+  position: absolute;
+  top: 7vh;
+  left: 50%;
+  background-color: white;
+}
+
+#month-dropdown > div {
+  padding: 10px;
+  border-bottom: 1px solid #ccc;
+  text-align: center;
+  cursor: pointer;
+}
+
+#month-dropdown > div:hover {
+  background-color: #f9f9f9;
+}
+
+@keyframes rotate {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(180deg);
+  }
+}
+
+.animate-rotate {
+  animation: rotate 200ms forwards;
+}
+
+.animate-rotate-reverse {
+  animation: rotate 200ms reverse forwards;
+}
+
 @media screen and (max-width: 800px) {
+  .monthName > img {
+    width: 24px;
+    height: 24px;
+  }
   h1 {
     font-size: 1.5rem;
   }
