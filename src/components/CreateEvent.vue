@@ -1,9 +1,11 @@
 <script setup>
-import { computed, ref, reactive } from 'vue'
+import { ref, reactive } from 'vue'
+import Cookies from 'js-cookie'
 
 const props = defineProps(['daySelected', 'currentMonth', 'countries', 'loggedIn'])
 const emit = defineEmits(['toggleCountry'])
 const months = defineModel('months')
+const events = defineModel('events')
 
 const errors = reactive({
   name: null,
@@ -15,10 +17,6 @@ const errors = reactive({
 const sendingEvent = ref(false)
 const eventResponse = reactive({ show: false, status: null, message: null })
 
-const getMonth = computed(() => {
-  return months.value[props.currentMonth]
-})
-
 function getOffSetOfMonth(month) {
   let offset = 0
   for (let i = 0; i < 7; i++) {
@@ -27,29 +25,15 @@ function getOffSetOfMonth(month) {
   return offset - 1
 }
 
-const getCurrentDay = computed(() => {
-  return getMonth.value.dates[props.daySelected + getOffSetOfMonth(getMonth.value)]
-})
-
-const getEventsForSelectedDay = computed(() => {
-  let events = []
-  const currentDay = getCurrentDay.value
-  for (let i = 0; i < currentDay.events.length; i++) {
-    if (props.countries[currentDay.events[i].country].selected) {
-      events.push(currentDay.events[i])
-    }
-  }
-  return events
-})
-
 async function addEvent(event) {
   const name = event.target['name-input'].value
   const description = event.target['descriptionInput'].value
-  const country = event.target['selectCountry'].value
-  const month = event.target['month-input'].value
-  const dayNumber = event.target['day-input'].value
+  const country = Number(event.target['selectCountry'].value)
+  const month = Number(event.target['month-input'].value)
+  const dayNumber = Number(event.target['day-input'].value)
   const dayIndex = Number(dayNumber) + getOffSetOfMonth(months.value[month])
   const button = event.target.querySelector('button')
+  const userId = Cookies.get('id')
   button.disabled = true
   sendingEvent.value = true
 
@@ -82,6 +66,11 @@ async function addEvent(event) {
     errors.date = 'Invalid day'
     error = true
   }
+  if (!userId) {
+    errors.name = 'You must be logged in to add an event'
+    error = true
+  }
+
   if (error) {
     eventResponse.show = true
     eventResponse.status = false
@@ -92,6 +81,7 @@ async function addEvent(event) {
   }
 
   try {
+    // const response = await fetch('http://localhost:3000/api/addevent', {
     const response = await fetch('https://calender-database.onrender.com/api/addevent', {
       method: 'POST',
       headers: {
@@ -102,44 +92,41 @@ async function addEvent(event) {
         description,
         country,
         month,
+        dayNumber,
         dayIndex,
+        userId,
       }),
     })
-    button.disabled = false
-    sendingEvent.value = false
-    eventResponse.show = true
+
     eventResponse.status = true
     eventResponse.message = 'Success!'
     const id = await response.text()
 
-    months.value[month].dates[dayIndex].events.push({
-      id: id,
-      name,
-      description,
-      country,
-    })
+    events.value.push({ _id: id, name, description, country, month, dayNumber, dayIndex })
+    months.value[month].dates[dayIndex].events.push(id)
+
     event.target['name-input'].value = ''
     event.target['descriptionInput'].value = ''
     event.target['selectCountry'].value = 'default'
   } catch (error) {
     console.error(error)
-    eventResponse.show = true
     eventResponse.status = false
     eventResponse.message = 'Something went wrong. Please try again later.'
-    button.disabled = false
-    sendingEvent.value = false
   }
+  button.disabled = false
+  sendingEvent.value = false
+  eventResponse.show = true
 }
 </script>
 
 <template>
   <div class="container">
-    <div v-show="getCurrentDay.events.length > 0" class="events">
+    <!-- <div v-show="getCurrentDay.events.length > 0" class="events">
       Events:
       <ul>
         <li v-for="event in getEventsForSelectedDay" :key="event.id">{{ event.name }}</li>
       </ul>
-    </div>
+    </div> -->
     <div class="countries">
       Countries:
       <div v-for="country in countries" :key="country.id" class="country" style="width: fit-content" @click="emit('toggleCountry', country.id)">

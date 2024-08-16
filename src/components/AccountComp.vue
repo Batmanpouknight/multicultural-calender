@@ -5,6 +5,7 @@ import bcrypt from 'bcryptjs'
 import Cookies from 'js-cookie'
 
 const user = defineModel('user')
+const events = defineModel('events')
 
 const emit = defineEmits(['hideAccountOverlay'])
 
@@ -23,11 +24,15 @@ function updateFormValues(e) {
   formValues[e.target.name] = e.target.value
 }
 
-function updateCookie() {
-  Cookies.set('id', user.value.id, { expires: 14 })
-  Cookies.set('email', user.value.email, { expires: 14 })
-  Cookies.set('username', user.value.username, { expires: 14 })
-  Cookies.set('type', user.value.type, { expires: 14 })
+function getEventsForUser() {
+  let userEvents = []
+  console.log(user.value.events)
+  for (let i = 0; i < user.value.events.length; i++) {
+    const event = events.value.find((event) => event._id === user.value.events[i])
+    if (event) userEvents.push(event)
+  }
+  console.log(userEvents)
+  return userEvents
 }
 
 async function signupSubmit() {
@@ -83,7 +88,7 @@ async function signupSubmit() {
       user.value.email = email
       user.value.username = username
       user.value.type = type
-      updateCookie()
+      Cookies.set('token', data.result.token, { expires: 14 })
 
       console.log(data)
     } catch (error) {
@@ -136,17 +141,16 @@ async function loginSubmit() {
         disableForm.value = false
         return
       }
-
       user.value.id = userInfo.id
       user.value.email = userInfo.email
       user.value.username = userInfo.username
       user.value.type = userInfo.type
-      updateCookie()
-      disableForm.value = false
+      user.value.events = userInfo.events
+      Cookies.set('token', userInfo.token, { expires: 14 })
     } catch (error) {
-      disableForm.value = false
       console.log(error)
     }
+    disableForm.value = false
   }
 }
 
@@ -171,7 +175,10 @@ function logout() {
       </div>
       <div id="user-info" v-if="user.type != 'anonymous'">
         <h2>Welcome, {{ user.username }}</h2>
-        Idk add some more stuff here
+        <div id="user-events">
+          <h3>Your Events:</h3>
+          <div v-for="event in getEventsForUser()" :key="event._id">{{ event.name }}</div>
+        </div>
         <button @click="logout">Log Out</button>
       </div>
       <div id="signup" v-else-if="showInfo == 'signup'">
@@ -266,6 +273,14 @@ function logout() {
   align-items: center;
 }
 
+#user-events {
+  margin: 10px 0;
+}
+
+#user-events > * {
+  margin: 5px 0;
+}
+
 form {
   width: 100%;
 }
@@ -290,10 +305,6 @@ button {
   border: none;
   border-radius: 5px;
   cursor: pointer;
-}
-
-button:hover {
-  background-color: #3f3f7f;
 }
 
 button:disabled {

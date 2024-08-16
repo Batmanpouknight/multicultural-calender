@@ -2,7 +2,9 @@
 import { computed, ref, onMounted, reactive } from 'vue'
 
 const props = defineProps(['months', 'daySelected', 'currentMonth', 'countries'])
-const emit = defineEmits(['changeMonth', 'changeDay'])
+const emit = defineEmits(['changeDay'])
+
+const events = defineModel('events')
 
 const dayFullStrings = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
 const dayShortStrings = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
@@ -55,16 +57,15 @@ function isSelected(index) {
  * @returns {array} the events for the day
  */
 function getEventsForADay(index) {
-  let events = []
-  let day = index
-  let dayInfo = getCurrnetMonthObject.value.dates[day]
+  let filteredEvents = []
+  let dayInfo = getCurrnetMonthObject.value.dates[index]
   for (let i = 0; i < dayInfo.events.length; i++) {
-    if (props.countries[dayInfo.events[i].country].selected) {
-      events.push(dayInfo.events[i])
+    const event = events.value.find((e) => e._id === dayInfo.events[i])
+    if (event && props.countries[event.country].selected) {
+      filteredEvents.push(event)
     }
   }
-
-  return events
+  return filteredEvents
 }
 
 function showEventDetails(event, e) {
@@ -209,7 +210,6 @@ onMounted(() => {
 
 @media (max-width: 800px) {
   .event-details {
-    height: 300px;
     width: 300px;
   }
 }

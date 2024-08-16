@@ -5,6 +5,7 @@ import AccountComp from './components/AccountComp.vue'
 import Cookies from 'js-cookie'
 
 const months = ref([])
+const events = ref([])
 
 const loadingApp = ref(true)
 
@@ -26,6 +27,7 @@ const user = reactive({
   username: '',
   email: '',
   type: 'anonymous',
+  events: [],
 })
 
 const loggedIn = computed(() => user.id !== '')
@@ -145,33 +147,52 @@ watch(showSideBar, (newVal) => {
   }
 })
 
-function cookieCheck() {
-  const id = Cookies.get('id')
-  const email = Cookies.get('email')
-  const username = Cookies.get('username')
-  const type = Cookies.get('type')
-  if (id && email && username && type) {
-    user.id = id
-    user.email = email
-    user.username = username
-    user.type = type
+async function fetchUser() {
+  try {
+    const res = await fetch('https://calender-database.onrender.com/user/updatefromserver', {
+      // const res = await fetch('http://localhost:3000/user/updatefromserver', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${Cookies.get('token')}`,
+      },
+    })
+    const data = await res.json()
+    user.id = data.result.id
+    user.email = data.result.email
+    user.username = data.result.username
+    user.type = data.result.type
+    user.events = data.result.events
+  } catch (error) {
+    console.error('Server did not respond: ', error)
   }
 }
 
 async function fetchCalendar() {
   try {
-    // const res = await fetch('http://localhost:3000/months')
-    const res = await fetch('https://calender-database.onrender.com/months')
-    months.value = await res.json()
+    // const monthResult = await fetch('http://localhost:3000/months')
+    const monthResult = await fetch('https://calender-database.onrender.com/months')
+    months.value = await monthResult.json()
   } catch (error) {
-    console.error('Server did not respond: ', error)
+    console.error('Server did not respond for months: ', error)
   }
   loadingApp.value = false
 }
 
+async function fetchEvents() {
+  try {
+    // const eventsResult = await fetch('http://localhost:3000/api/events')
+    const eventsResult = await fetch('https://calender-database.onrender.com/api/events')
+    events.value = await eventsResult.json()
+  } catch (error) {
+    console.error('Server did not respond to evennts: ', error)
+  }
+}
+
 onBeforeMount(async () => {
-  cookieCheck()
+  await fetchUser()
   await fetchCalendar()
+  await fetchEvents()
 })
 </script>
 <template>
@@ -197,15 +218,16 @@ onBeforeMount(async () => {
       @touchend="handleCalendarTouch"
       @touchcancel="handleCalendarTouch">
       <Calender
-        v-model:months="months"
+        v-model:events="events"
+        :months="months"
         :daySelected="daySelected"
         :currentMonth="currentMonth"
         :countries="countries"
-        @changeMonth="changeMonth"
         @changeDay="changeDay" />
     </div>
     <div class="create-event" :class="animateSideBar" v-show="showSideBar || tempShowSideBar">
       <CreateEvent
+        v-model:events="events"
         :months="months"
         :daySelected="daySelected"
         :currentMonth="currentMonth"
@@ -214,7 +236,7 @@ onBeforeMount(async () => {
         @toggleCountry="toggleCountry" />
     </div>
     <div class="account-overlay" v-if="showAccountOverlay">
-      <AccountComp v-model:user="user" @hideAccountOverlay="showAccountOverlay = false" />
+      <AccountComp v-model:user="user" v-model:events="events" @hideAccountOverlay="showAccountOverlay = false" />
     </div>
   </div>
   <div id="loading" v-else-if="loadingApp">
@@ -324,6 +346,15 @@ body {
   }
 }
 
+@keyframes increace-size {
+  from {
+    transform: scale(1);
+  }
+  to {
+    transform: scale(1.05);
+  }
+}
+
 .stretch_animation {
   transform-origin: right;
   animation: 200ms linear stretchCalendar;
@@ -338,6 +369,10 @@ body {
 }
 .slideOut_animation {
   animation: 190ms linear reverse slideSide;
+}
+
+button:hover {
+  animation: 200ms forwards increace-size;
 }
 
 @media screen and (max-width: 800px) {
