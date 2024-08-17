@@ -1,8 +1,7 @@
 <script setup>
 import { ref, reactive } from 'vue'
-import Cookies from 'js-cookie'
 
-const props = defineProps(['daySelected', 'currentMonth', 'countries', 'loggedIn'])
+const props = defineProps(['daySelected', 'currentMonth', 'countries', 'loggedIn', 'user'])
 const emit = defineEmits(['toggleCountry'])
 const months = defineModel('months')
 const events = defineModel('events')
@@ -33,7 +32,7 @@ async function addEvent(event) {
   const dayNumber = Number(event.target['day-input'].value)
   const dayIndex = Number(dayNumber) + getOffSetOfMonth(months.value[month])
   const button = event.target.querySelector('button')
-  const userId = Cookies.get('id')
+  const userId = props.user.id
   button.disabled = true
   sendingEvent.value = true
 
@@ -121,12 +120,6 @@ async function addEvent(event) {
 
 <template>
   <div class="container">
-    <!-- <div v-show="getCurrentDay.events.length > 0" class="events">
-      Events:
-      <ul>
-        <li v-for="event in getEventsForSelectedDay" :key="event.id">{{ event.name }}</li>
-      </ul>
-    </div> -->
     <div class="countries">
       Countries:
       <div v-for="country in countries" :key="country.id" class="country" style="width: fit-content" @click="emit('toggleCountry', country.id)">

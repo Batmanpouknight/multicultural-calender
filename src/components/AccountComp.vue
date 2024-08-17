@@ -159,10 +159,8 @@ function logout() {
   user.value.email = ''
   user.value.username = ''
   user.value.type = 'anonymous'
-  Cookies.remove('id')
-  Cookies.remove('email')
-  Cookies.remove('username')
-  Cookies.remove('type')
+  user.value.events = []
+  Cookies.remove('token')
 }
 </script>
 <template>
