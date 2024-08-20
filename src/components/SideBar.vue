@@ -1,5 +1,6 @@
 <script setup>
 import { ref, reactive } from 'vue'
+import Joi from 'joi'
 
 const props = defineProps(['daySelected', 'currentMonth', 'countries', 'loggedIn', 'user'])
 const emit = defineEmits(['toggleCountry'])
@@ -11,6 +12,8 @@ const errors = reactive({
   description: null,
   country: null,
   date: null,
+  holiday: null,
+  source: null,
 })
 
 const sendingEvent = ref(false)
@@ -25,57 +28,50 @@ function getOffSetOfMonth(month) {
 }
 
 async function addEvent(event) {
-  const name = event.target['name-input'].value
-  const description = event.target['descriptionInput'].value
-  const country = Number(event.target['selectCountry'].value)
-  const month = Number(event.target['month-input'].value)
-  const dayNumber = Number(event.target['day-input'].value)
+  const name = event.target['name'].value
+  const description = event.target['description'].value
+  const country = Number(event.target['country'].value)
+  const month = Number(event.target['month'].value)
+  const dayNumber = Number(event.target['day'].value)
+  const holiday = event.target['holiday'].value
+  const source = event.target['source'].value
   const dayIndex = Number(dayNumber) + getOffSetOfMonth(months.value[month])
   const button = event.target.querySelector('button')
   const userId = props.user.id
   button.disabled = true
   sendingEvent.value = true
 
-  console.log(dayNumber, dayIndex)
-
   errors.name = null
   errors.description = null
   errors.country = null
   errors.date = null
+  errors.holiday = null
+  errors.source = null
 
-  let error = false
-  if (!name) {
-    errors.name = 'Name is required'
-    error = true
-  }
-  if (!description) {
-    errors.description = 'Description is required'
-    error = true
-  }
-  if (country == 'default') {
-    errors.country = 'Country is required'
-    error = true
-  }
-  if (!(month >= 0 && month <= 11)) {
-    errors.date = 'Invalid month'
-    error = true
-  }
+  const schema = Joi.object({
+    name: Joi.string().required(),
+    description: Joi.string().max(150).required(),
+    country: Joi.number().min(0).max(5).required(),
+    month: Joi.number().min(0).max(11).required(),
+    dayNumber: Joi.number().min(0).max(30).required(),
+    holiday: Joi.bool().required(),
+    source: Joi.string().allow('').uri().optional(),
+    userId: Joi.string().required(),
+  })
 
-  if (dayNumber > months.value[month].days || dayNumber < 0) {
-    errors.date = 'Invalid day'
-    error = true
-  }
-  if (!userId) {
-    errors.name = 'You must be logged in to add an event'
-    error = true
-  }
+  const { error } = schema.validate({ name, description, country, month, dayNumber, holiday, source, userId }, { abortEarly: false })
 
   if (error) {
+    console.log(error.details)
     eventResponse.show = true
     eventResponse.status = false
     eventResponse.message = 'Some fields are invalid'
     button.disabled = false
     sendingEvent.value = false
+
+    error.details.forEach((detail) => {
+      errors[detail.context.key] = detail.message
+    })
     return
   }
 
@@ -93,6 +89,8 @@ async function addEvent(event) {
         month,
         dayNumber,
         dayIndex,
+        holiday: holiday === 'true',
+        source,
         userId,
       }),
     })
@@ -101,12 +99,14 @@ async function addEvent(event) {
     eventResponse.message = 'Success!'
     const id = await response.text()
 
-    events.value.push({ _id: id, name, description, country, month, dayNumber, dayIndex })
+    events.value.push({ _id: id, name, description, country, month, dayNumber, dayIndex, holiday: holiday == 'true', source, userId })
     months.value[month].dates[dayIndex].events.push(id)
 
-    event.target['name-input'].value = ''
-    event.target['descriptionInput'].value = ''
-    event.target['selectCountry'].value = 'default'
+    event.target['name'].value = ''
+    event.target['description'].value = ''
+    event.target['country'].value = 'default'
+    event.target['source'].value = ''
+    event.target['holiday'].value = 'default'
   } catch (error) {
     console.error(error)
     eventResponse.status = false
@@ -120,9 +120,9 @@ async function addEvent(event) {
 
 <template>
   <div class="container">
-    <div class="countries">
+    <div id="countries">
       Countries:
-      <div v-for="country in countries" :key="country.id" class="country" style="width: fit-content" @click="emit('toggleCountry', country.id)">
+      <div v-for="country in countries" :key="country.id" class="country" @click="emit('toggleCountry', country.id)">
         <input type="checkbox" :name="country.name" :value="country.name" :checked="country.selected" />
         <label :for="country.name">
           {{ country.name }}
@@ -133,15 +133,15 @@ async function addEvent(event) {
     <div class="new-event" v-if="loggedIn">
       <form @submit.prevent="addEvent">
         <div style="margin-top: 0">
-          <label for="name-input">Name: </label>
-          <input type="text" class="name-input" name="name-input" @change="errors.name = null" />
+          <label for="name">Name: </label>
+          <input type="text" class="name" name="name" @change="errors.name = null" />
           <div v-if="errors.name" class="error">{{ errors.name }}</div>
         </div>
 
         <div>
           <div>
-            <input type="number" name="day-input" class="day-input" :value="daySelected" />/
-            <select name="month-input" class="month-input">
+            <input type="number" name="day" class="day" :value="daySelected" />/
+            <select name="month" class="month">
               <option v-for="(month, index) in months" :key="index" :value="index" :selected="index == props.currentMonth">
                 {{ month.name }}
               </option>
@@ -152,20 +152,36 @@ async function addEvent(event) {
         </div>
 
         <div>
-          <label for="descriptionInput">Description: </label>
-          <textarea name="descriptionInput" id="descriptionInput" @change="errors.description = null"></textarea>
+          <label for="description">Description: </label>
+          <textarea name="description" id="description" @change="errors.description = null"></textarea>
           <div v-if="errors.description" class="error">{{ errors.description }}</div>
         </div>
 
         <div>
-          <label for="selectCountry">Select Country: </label>
-          <select name="selectCountry" id="selectCountry" @change="errors.country = null">
+          <label for="country">Select Country: </label>
+          <select name="country" id="country" @change="errors.country = null">
             <option value="default" selected disabled>Choose an option</option>
             <option v-for="(country, index) in countries" :key="index" :value="index">
               {{ country.name }}
             </option>
           </select>
           <div v-if="errors.country" class="error">{{ errors.country }}</div>
+        </div>
+
+        <div>
+          <label for="holiday">Is this day a holiday in that country?</label>
+          <select name="holiday" id="holiday">
+            <option value="default" selected disabled>Choose an option</option>
+            <option value="true">Yes</option>
+            <option value="false">No</option>
+          </select>
+          <div v-if="errors.holiday" class="error">{{ errors.holiday }}</div>
+        </div>
+
+        <div>
+          <label for="source">Source(Optional): </label>
+          <input type="url" name="source" id="source" />
+          <div v-if="errors.source" class="error">{{ errors.source }}</div>
         </div>
 
         <button type="submit" id="submit-event">Add Event</button>
@@ -185,8 +201,15 @@ async function addEvent(event) {
   margin-top: 20px;
 }
 
-input[type='checkbox'].custom-checkbox {
-  pointer-events: none;
+.country {
+  margin-left: 10px;
+  cursor: pointer;
+  user-select: none;
+  width: fit-content;
+}
+
+.country:hover {
+  animation: grow 0.5s forwards;
 }
 
 .error {
@@ -216,16 +239,16 @@ form {
   flex-direction: column;
 }
 
-.day-input {
+.day {
   width: 35px;
 }
 
-.month-input {
+.month {
   width: 85px;
   font-size: 12px;
 }
 
-#selectCountry {
+#country {
   width: fit-content;
 }
 
@@ -252,5 +275,15 @@ form {
 select {
   background-color: rgba(0, 0, 0, 0.22);
   border: none;
+  width: fit-content;
+}
+
+@keyframes grow {
+  from {
+    transform: scale(1);
+  }
+  to {
+    transform: scale(1.25);
+  }
 }
 </style>

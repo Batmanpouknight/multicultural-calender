@@ -26,12 +26,10 @@ function updateFormValues(e) {
 
 function getEventsForUser() {
   let userEvents = []
-  console.log(user.value.events)
   for (let i = 0; i < user.value.events.length; i++) {
     const event = events.value.find((event) => event._id === user.value.events[i])
     if (event) userEvents.push(event)
   }
-  console.log(userEvents)
   return userEvents
 }
 
@@ -66,7 +64,6 @@ async function signupSubmit() {
   const hashedPassword = await bcrypt.hash(password, 15)
 
   if (errors.value.length === 0) {
-    console.log('no errors')
     try {
       const response = await fetch('https://calender-database.onrender.com/users/signup', {
         // const response = await fetch('http://localhost:3000/users/signup', {
@@ -89,8 +86,6 @@ async function signupSubmit() {
       user.value.username = username
       user.value.type = type
       Cookies.set('token', data.result.token, { expires: 14 })
-
-      console.log(data)
     } catch (error) {
       console.log(error)
     }
@@ -241,9 +236,10 @@ function logout() {
   transform: translate(-50%, -50%);
   border-radius: 10px;
   padding: 30px;
-  height: 90%;
-  width: 30%;
+  height: 95%;
+  width: 400px;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  box-sizing: border-box;
 }
 
 #close-button {
@@ -308,5 +304,11 @@ button {
 button:disabled {
   background-color: gray;
   cursor: not-allowed;
+}
+
+@media screen and (max-width: 450px) {
+  #account-card {
+    width: 90%;
+  }
 }
 </style>

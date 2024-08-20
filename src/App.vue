@@ -1,7 +1,12 @@
 <script setup>
 import { ref, reactive, onBeforeMount, computed, watch } from 'vue'
+
 import Header from './components/AppHeader.vue'
 import AccountComp from './components/AccountComp.vue'
+import Calender from './components/CalenderInterface.vue'
+import SideBar from './components/SideBar.vue'
+import EditEvent from './components/EditEvent.vue'
+
 import Cookies from 'js-cookie'
 
 const months = ref([])
@@ -36,6 +41,8 @@ const showAccountOverlay = ref(false)
 const tempShowSideBar = ref(false)
 const showSideBar = ref(window.innerWidth > 800)
 const mobileMode = ref(window.innerWidth < 800)
+const showEditEvent = ref(false)
+const eventToEdit = ref({})
 
 const calenderStyle = reactive({})
 
@@ -109,7 +116,6 @@ function handleCalendarTouch(e) {
 }
 
 watch(showSideBar, (newVal) => {
-  console.log('showSideBar', newVal, mobileMode.value)
   if (mobileMode.value) {
     if (newVal) {
       animateSideBar.slideIn_animation = true
@@ -147,7 +153,14 @@ watch(showSideBar, (newVal) => {
   }
 })
 
+function showEditEventFunc(event) {
+  eventToEdit.value = event
+  showEditEvent.value = true
+}
+
 async function fetchUser() {
+  if (!Cookies.get('token')) return
+
   try {
     const res = await fetch('https://calender-database.onrender.com/user/updatefromserver', {
       // const res = await fetch('http://localhost:3000/user/updatefromserver', {
@@ -190,9 +203,18 @@ async function fetchEvents() {
 }
 
 onBeforeMount(async () => {
+  window.addEventListener('resize', () => {
+    if (window.innerWidth < 800) {
+      mobileMode.value = true
+      showSideBar.value = false
+    } else {
+      mobileMode.value = false
+      showSideBar.value = true
+    }
+  })
   await fetchUser()
-  await fetchCalendar()
   await fetchEvents()
+  await fetchCalendar()
 })
 </script>
 <template>
@@ -201,7 +223,6 @@ onBeforeMount(async () => {
       <Header
         v-if="months.length > 0"
         v-model:showSideBar="showSideBar"
-        v-model:mobileMode="mobileMode"
         :loggedIn="loggedIn"
         :months="months"
         :currentMonth="currentMonth"
@@ -223,10 +244,12 @@ onBeforeMount(async () => {
         :daySelected="daySelected"
         :currentMonth="currentMonth"
         :countries="countries"
-        @changeDay="changeDay" />
+        :user="user"
+        @changeDay="changeDay"
+        @editEvent="showEditEventFunc" />
     </div>
     <div class="create-event" :class="animateSideBar" v-show="showSideBar || tempShowSideBar">
-      <CreateEvent
+      <SideBar
         v-model:events="events"
         :months="months"
         :daySelected="daySelected"
@@ -238,6 +261,9 @@ onBeforeMount(async () => {
     </div>
     <div class="account-overlay" v-if="showAccountOverlay">
       <AccountComp v-model:user="user" v-model:events="events" @hideAccountOverlay="showAccountOverlay = false" />
+    </div>
+    <div id="edit-event" v-if="showEditEvent">
+      <EditEvent :months="months" :countries="countries" :eventToEdit="eventToEdit" @hideEditEvent="showEditEvent = false" />
     </div>
   </div>
   <div id="loading" v-else-if="loadingApp">
@@ -330,6 +356,17 @@ body {
   z-index: 1002;
 }
 
+#edit-event {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: rgba(0, 0, 0, 0.5);
+  width: 100vw;
+  height: 100vh;
+  z-index: 1003;
+}
+
 @keyframes stretchCalendar {
   0% {
   }
@@ -383,69 +420,9 @@ button:hover {
       'calender calender';
   }
   .create-event {
-    /* display: none; */
     position: absolute;
     width: 50vw;
     top: 8vh;
-  }
-}
-
-.spinner {
-  animation: rotator 1.4s linear infinite;
-}
-
-#loading .spinner {
-  height: 150px;
-  width: 150px;
-}
-
-@keyframes rotator {
-  0% {
-    transform: rotate(0deg);
-  }
-  100% {
-    transform: rotate(270deg);
-  }
-}
-
-.path {
-  stroke-dasharray: 187;
-  stroke-dashoffset: 0;
-  transform-origin: center;
-  animation:
-    dash 1.4s ease-in-out infinite,
-    colors 5.6s ease-in-out infinite;
-}
-
-@keyframes colors {
-  0% {
-    stroke: #4285f4;
-  }
-  25% {
-    stroke: #de3e35;
-  }
-  50% {
-    stroke: #f7c223;
-  }
-  75% {
-    stroke: #1b9a59;
-  }
-  100% {
-    stroke: #4285f4;
-  }
-}
-
-@keyframes dash {
-  0% {
-    stroke-dashoffset: 187;
-  }
-  50% {
-    stroke-dashoffset: 46.75;
-    transform: rotate(135deg);
-  }
-  100% {
-    stroke-dashoffset: 187;
-    transform: rotate(450deg);
   }
 }
 </style>

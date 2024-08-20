@@ -1,12 +1,11 @@
 <script setup>
-import { ref, onMounted, computed } from 'vue'
+import { ref, computed } from 'vue'
 
 const props = defineProps(['months', 'currentMonth', 'loggedIn'])
 
 const emit = defineEmits(['changeMonth', 'showAccountOverlay'])
 
 const showSideBar = defineModel('showSideBar')
-const mobileMode = defineModel('mobileMode')
 
 const showMonthDropdown = ref(false)
 
@@ -25,40 +24,40 @@ function changeMonthButton(direction) {
 function changeMonth(month) {
   showMonthDropdown.value = false
   emit('changeMonth', month)
+  document.getElementById('dropdown-icon').style.transform = 'rotate(0deg)'
+  document.getElementById('dropdown-icon').classList.add('animate-rotate-reverse')
+  setTimeout(() => {
+    document.getElementById('dropdown-icon').classList.remove('animate-rotate-reverse')
+  }, 200)
 }
 
 function toggleDropdown() {
+  const dropdownIcon = document.getElementById('dropdown-icon')
+  const dropdown = document.getElementById('month-dropdown')
   if (showMonthDropdown.value) {
-    document.getElementById('dropdown-icon').style.transform = 'rotate(0deg)'
-    document.getElementById('dropdown-icon').classList.add('animate-rotate-reverse')
+    dropdownIcon.style.transform = 'rotate(0deg)'
+    dropdownIcon.classList.add('animate-rotate-reverse')
+    dropdown.classList.add('animate-dropdown-reverse')
     setTimeout(() => {
-      document.getElementById('dropdown-icon').classList.remove('animate-rotate-reverse')
+      dropdownIcon.classList.remove('animate-rotate-reverse')
+      dropdown.classList.remove('animate-dropdown-reverse')
+      showMonthDropdown.value = false
     }, 200)
   } else {
-    document.getElementById('dropdown-icon').style.transform = 'rotate(180deg)'
-    document.getElementById('dropdown-icon').classList.add('animate-rotate')
+    showMonthDropdown.value = true
+    dropdownIcon.style.transform = 'rotate(180deg)'
+    dropdownIcon.classList.add('animate-rotate')
+    dropdown.classList.add('animate-dropdown')
     setTimeout(() => {
-      document.getElementById('dropdown-icon').classList.remove('animate-rotate')
+      dropdownIcon.classList.remove('animate-rotate')
+      dropdown.classList.remove('animate-dropdown')
     }, 200)
   }
-  showMonthDropdown.value = !showMonthDropdown.value
 }
 
 function toggleSideBar() {
   showSideBar.value = !showSideBar.value
 }
-
-onMounted(() => {
-  window.addEventListener('resize', () => {
-    if (window.innerWidth < 800) {
-      mobileMode.value = true
-      showSideBar.value = false
-    } else {
-      mobileMode.value = false
-      showSideBar.value = true
-    }
-  })
-})
 </script>
 
 <template>
@@ -69,12 +68,14 @@ onMounted(() => {
         <h1>
           {{ currnetMonthObject.name }}
         </h1>
-        <img src="./icons/arrow_drop_down.svg" alt="dropdown arrow" id="dropdown-icon" />
+        <img src="./icons/arrow_drop_down.svg" alt="dropdownIcon arrow" id="dropdown-icon" />
       </div>
 
       <div id="month-dropdown" v-show="showMonthDropdown">
-        <div @click="changeMonth(new Date().getMonth())">Current Month</div>
-        <div v-for="(month, index) in months" :key="month.id" @click="changeMonth(index)">{{ month.name }}</div>
+        <div class="dropdown-item" @click="changeMonth(new Date().getMonth())">Current Month</div>
+        <div v-for="(month, index) in months" class="dropdown-item" :key="month.id" @click="changeMonth(index)">
+          {{ month.name }}
+        </div>
       </div>
       <button @click="changeMonthButton(1)">Next</button>
     </div>
@@ -149,7 +150,7 @@ onMounted(() => {
   background-color: white;
 }
 
-#month-dropdown > div {
+.dropdown-item {
   padding: 10px;
   border-bottom: 1px solid #ccc;
   text-align: center;
@@ -175,6 +176,25 @@ onMounted(() => {
 
 .animate-rotate-reverse {
   animation: rotate 200ms reverse forwards;
+}
+
+@keyframes dropdown {
+  0% {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-dropdown {
+  animation: dropdown 200ms forwards;
+}
+
+.animate-dropdown-reverse {
+  animation: dropdown 200ms reverse forwards;
 }
 
 @media screen and (max-width: 800px) {

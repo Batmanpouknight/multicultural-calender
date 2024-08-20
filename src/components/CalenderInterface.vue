@@ -1,8 +1,8 @@
 <script setup>
 import { computed, ref, onMounted, reactive } from 'vue'
 
-const props = defineProps(['months', 'daySelected', 'currentMonth', 'countries'])
-const emit = defineEmits(['changeDay'])
+const props = defineProps(['months', 'daySelected', 'currentMonth', 'countries', 'user'])
+const emit = defineEmits(['changeDay', 'editEvent'])
 
 const events = defineModel('events')
 
@@ -71,7 +71,6 @@ function getEventsForADay(index) {
 function showEventDetails(event, e) {
   showOverlay.value = true
   showEventDetailsForDay.value = event
-  console.log(e)
   eventDetailsLocation.top = Number((e.y / window.innerHeight) * 100) + '%'
   eventDetailsLocation.left = Number((e.x / window.innerWidth) * 100) + '%'
   if (e.x > window.innerWidth / 2) {
@@ -80,6 +79,32 @@ function showEventDetails(event, e) {
   if (e.y > window.innerHeight / 2) {
     eventDetailsLocation.top = Number((e.y / window.innerHeight) * 100 - 20) + '%'
   }
+}
+
+const isThisUserEvent = computed(() => {
+  return props.user.id === showEventDetailsForDay.value.userId
+})
+
+function deleteEvent() {
+  try {
+    const res = fetch('https://calender-database.onrender.com/api/removeevent', {
+      // const res = fetch('http://localhost:3000/api/removeevent', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ id: showEventDetailsForDay.value._id }),
+    })
+    events.value = events.value.filter((e) => e._id !== showEventDetailsForDay.value._id)
+    showOverlay.value = false
+  } catch (error) {
+    console.error(error)
+  }
+}
+
+function showEditEvent(event) {
+  emit('editEvent', event)
+  showOverlay.value = false
 }
 
 onMounted(() => {
@@ -103,7 +128,12 @@ onMounted(() => {
       @click.self="emit('changeDay', getDayObject(index))">
       <div v-if="index < 7">{{ days[index] }}</div>
       {{ getDayObject(index).number }}
-      <div v-for="event in getEventsForADay(index)" class="event-name" :key="event.id" @click="showEventDetails(event, $event)">
+      <div
+        v-for="event in getEventsForADay(index)"
+        class="event-name"
+        :class="{ holiday: event.holiday }"
+        :key="event.id"
+        @click="showEventDetails(event, $event)">
         {{ event.name }}
       </div>
     </div>
@@ -113,9 +143,13 @@ onMounted(() => {
     <div class="event-details" :style="eventDetailsLocation">
       <div class="x-button" @click="showOverlay = false">x</div>
       <div class="event-info">
-        name: {{ showEventDetailsForDay.name }} <br />
-        country: {{ props.countries[showEventDetailsForDay.country].name }} <br />
-        description: {{ showEventDetailsForDay.description }}
+        <div>name: {{ showEventDetailsForDay.name }}</div>
+        <div>country: {{ props.countries[showEventDetailsForDay.country].name }}</div>
+        <div>description: {{ showEventDetailsForDay.description }}</div>
+        <div v-if="showEventDetailsForDay.source"><a :href="showEventDetailsForDay.source" target="_blank">Source</a></div>
+        <div v-if="isThisUserEvent">
+          <button @click="deleteEvent()">Delete</button><button @click="showEditEvent(showEventDetailsForDay)">Edit</button>
+        </div>
       </div>
     </div>
   </div>
@@ -150,6 +184,11 @@ onMounted(() => {
   box-sizing: border-box;
   text-overflow: ellipsis;
 }
+
+.event-name.holiday {
+  background-color: lightgreen;
+}
+
 .event-name:hover {
   cursor: pointer;
 }
@@ -190,6 +229,11 @@ onMounted(() => {
   /* transform: translate(-50%, -50%); */
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   border-radius: 10px;
+}
+
+.event-info {
+  display: flex;
+  flex-direction: column;
 }
 
 .x-button {
