@@ -26,6 +26,7 @@ function updateFormValues(e) {
 
 function getEventsForUser() {
   let userEvents = []
+  if (!user.value.events) return userEvents
   for (let i = 0; i < user.value.events.length; i++) {
     const event = events.value.find((event) => event._id === user.value.events[i])
     if (event) userEvents.push(event)

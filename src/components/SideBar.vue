@@ -100,7 +100,7 @@ async function addEvent(event) {
     const _id = await response.text()
 
     events.value.push({ _id, name, description, country, month, dayNumber, dayIndex, holiday: holiday == 'true', source, userId })
-    months.value[month].dates[dayIndex].events.push(id)
+    months.value[month].dates[dayIndex].events.push(_id)
 
     event.target['name'].value = ''
     event.target['description'].value = ''
