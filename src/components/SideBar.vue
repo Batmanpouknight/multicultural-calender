@@ -97,9 +97,9 @@ async function addEvent(event) {
 
     eventResponse.status = true
     eventResponse.message = 'Success!'
-    const id = await response.text()
+    const _id = await response.text()
 
-    events.value.push({ _id: id, name, description, country, month, dayNumber, dayIndex, holiday: holiday == 'true', source, userId })
+    events.value.push({ _id, name, description, country, month, dayNumber, dayIndex, holiday: holiday == 'true', source, userId })
     months.value[month].dates[dayIndex].events.push(id)
 
     event.target['name'].value = ''

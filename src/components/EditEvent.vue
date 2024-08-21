@@ -2,11 +2,13 @@
 import { reactive } from 'vue'
 
 const props = defineProps({
-  months: { type: Array, required: true },
   countries: { type: Array, required: true },
   eventToEdit: { type: Object, required: true },
 })
 const emit = defineEmits(['hideEditEvent'])
+
+const events = defineModel('events', { required: true, type: Array })
+const months = defineModel('months', { required: true, type: Array })
 
 const errors = reactive({
   name: null,
@@ -16,13 +18,83 @@ const errors = reactive({
   holiday: null,
   source: null,
 })
+
+function getOffSetOfMonth(month) {
+  let offset = 0
+  for (let i = 0; i < 7; i++) {
+    if (!month.dates[i].dayIsInThisMonth) offset++
+  }
+  return offset - 1
+}
+
+async function submitEdit(e) {
+  const name = e.target['name-input'].value
+  const description = e.target['details-input'].value
+  const month = Number(e.target['month'].value)
+  const dayNumber = Number(e.target['day'].value)
+  const dayIndex = Number(dayNumber) + getOffSetOfMonth(months.value[month])
+  const country = Number(e.target['country'].value)
+  const holiday = e.target['holiday'].value
+  const source = e.target['source'].value
+  const userId = props.eventToEdit.userId
+  const _id = props.eventToEdit._id
+  console.log(name, description, dayNumber, dayIndex, month, country, holiday, source, userId, _id)
+
+  try {
+    const res = await fetch('https://calender-database.onrender.com/api/updateevent', {
+      // const res = await fetch(`http://localhost:3000/api/updateevent`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        _id,
+        name,
+        description,
+        dayNumber,
+        dayIndex,
+        month,
+        country,
+        holiday: holiday == 'true',
+        source,
+        userId,
+      }),
+    })
+  } catch (err) {
+    console.log(err)
+  } finally {
+    emit('hideEditEvent')
+    const indexOfEvent = events.value.indexOf(props.eventToEdit)
+    events.value[indexOfEvent] = {
+      _id,
+      name,
+      description,
+      dayNumber,
+      dayIndex,
+      month,
+      country,
+      holiday: holiday == 'true',
+      source,
+      userId,
+    }
+    const monthBefore = props.eventToEdit.month
+    const dayIndexBefore = props.eventToEdit.dayIndex
+    const eventsBefore = months.value[monthBefore].dates[dayIndexBefore].events
+    const eventsAfter = months.value[month].dates[dayIndex].events
+    if (!(monthBefore === month && dayIndexBefore === dayIndex)) {
+      eventsBefore.splice(eventsBefore.indexOf(props.eventToEdit), 1)
+      console.log(eventsBefore)
+      eventsAfter.push(_id)
+    }
+  }
+}
 </script>
 <template>
   <div id="edit-event-container">
     <div id="edit-event-card">
       <div>Ligma</div>
       <div>
-        <form>
+        <form @submit.prevent="submitEdit">
           <div><label for="name-input">Name</label> <input type="text" name="name-input" id="name-input" :value="eventToEdit.name" /></div>
           <div>
             <label for="details-input">Details</label><textarea name="details-input" id="details-input" :value="eventToEdit.description"></textarea>

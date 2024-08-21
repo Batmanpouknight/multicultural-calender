@@ -263,7 +263,12 @@ onBeforeMount(async () => {
       <AccountComp v-model:user="user" v-model:events="events" @hideAccountOverlay="showAccountOverlay = false" />
     </div>
     <div id="edit-event" v-if="showEditEvent">
-      <EditEvent :months="months" :countries="countries" :eventToEdit="eventToEdit" @hideEditEvent="showEditEvent = false" />
+      <EditEvent
+        v-model:events="events"
+        v-model:months="months"
+        :countries="countries"
+        :eventToEdit="eventToEdit"
+        @hideEditEvent="showEditEvent = false" />
     </div>
   </div>
   <div id="loading" v-else-if="loadingApp">
