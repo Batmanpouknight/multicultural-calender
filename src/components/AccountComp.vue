@@ -1,5 +1,5 @@
 <script setup>
-import { ref, reactive } from 'vue'
+import { ref, reactive, watch } from 'vue'
 import Joi from 'joi'
 import bcrypt from 'bcryptjs'
 import Cookies from 'js-cookie'
@@ -41,7 +41,8 @@ async function signupSubmit() {
   const password = formValues.password
   const confirmPassword = formValues['confirm-password']
   const type = 'user'
-  errors.value = []
+
+  clearErrors()
   if (password !== confirmPassword) {
     errors.value.push({ id: 1, message: 'Passwords do not match', location: 'password' })
     disableForm.value = false
@@ -55,7 +56,6 @@ async function signupSubmit() {
   })
   const { error } = schema.validate({ email, username, password }, { abortEarly: false })
   if (error) {
-    console.log(error.details)
     for (let i = 0; i < error.details.length; i++) {
       errors.value.push({ id: i + 2, message: error.details[i].message, location: error.details[i].context.key })
     }
@@ -97,7 +97,8 @@ async function loginSubmit() {
   disableForm.value = true
   const email = formValues.email
   const password = formValues.password
-  errors.value = []
+
+  clearErrors()
   const schema = Joi.object({
     email: Joi.string()
       .email({ tlds: { allow: ['com', 'ca', 'net'] } })
@@ -110,6 +111,7 @@ async function loginSubmit() {
     for (let i = 0; i < error.details.length; i++) {
       errors.value.push({ id: i + 2, message: error.details[i].message, location: error.details[i].context.key })
     }
+    console.log(errors.value)
     disableForm.value = false
   }
   if (errors.value.length == 0) {
@@ -158,9 +160,27 @@ function logout() {
   user.value.events = []
   Cookies.remove('token')
 }
+
+function clearErrors() {
+  errors.value = []
+  document.querySelectorAll('.error').forEach((error) => error.remove())
+}
+
+watch(errors, () => {
+  if (errors.value.length > 0) {
+    errors.value.forEach((error) => {
+      const errorElement = document.createElement('div')
+      errorElement.classList.add('error')
+      errorElement.textContent = error.message
+      document.getElementById(error.location).appendChild(errorElement)
+    })
+  } else {
+    document.querySelectorAll('.error').forEach((error) => error.remove())
+  }
+})
 </script>
 <template>
-  <div id="account-container">
+  <div id="account-container" @click.self="emit('hideAccountOverlay')">
     <div id="account-card">
       <div id="close-button" @click="emit('hideAccountOverlay')">X</div>
       <div id="account-header">
@@ -178,17 +198,23 @@ function logout() {
       <div id="signup" v-else-if="showInfo == 'signup'">
         <h2 style="text-align: center">Sign Up</h2>
         <form class="info-form" @submit.prevent="signupSubmit" novalidate>
-          <div>
+          <div id="email">
             <label for="email">Email</label>
-            <input type="email" id="email" name="email" :value="formValues.email" @change="updateFormValues" :disabled="disableForm" />
+            <input type="email" id="email-input" name="email" :value="formValues.email" @change="updateFormValues" :disabled="disableForm" />
           </div>
-          <div>
+          <div id="username">
             <label for="username">Username</label>
-            <input type="text" id="username" name="username" :value="formValues.username" @change="updateFormValues" :disabled="disableForm" />
+            <input type="text" id="username-input" name="username" :value="formValues.username" @change="updateFormValues" :disabled="disableForm" />
           </div>
-          <div>
+          <div id="password">
             <label for="password">Password</label>
-            <input type="password" id="password" name="password" :value="formValues.password" @change="updateFormValues" :disabled="disableForm" />
+            <input
+              type="password"
+              id="password-input"
+              name="password"
+              :value="formValues.password"
+              @change="updateFormValues"
+              :disabled="disableForm" />
           </div>
           <div>
             <label for="confirm-password">Confirm Password</label>
@@ -202,23 +228,29 @@ function logout() {
           </div>
           <button class="submit-button" type="submit" :disabled="disableForm">Sign Up</button>
           <button class="change-form-button" type="button" @click="showInfo = 'login'" :disabled="disableForm">Log In</button>
-          <div class="errors" v-for="error in errors" :key="error.id">{{ error.message }}</div>
+          <!-- <div class="errors" v-for="error in errors" :key="error.id">{{ error.message }}</div> -->
         </form>
       </div>
       <div id="login" v-else-if="showInfo == 'login'" novalidate>
         <h2 style="text-align: center">Login</h2>
         <form class="info-form" @submit.prevent="loginSubmit">
-          <div>
+          <div id="email">
             <label for="email">Email</label>
-            <input type="email" id="email" name="email" :value="formValues.email" @change="updateFormValues" :disabled="disableForm" />
+            <input type="email" id="email-input" name="email" :value="formValues.email" @change="updateFormValues" :disabled="disableForm" />
           </div>
-          <div>
+          <div id="password">
             <label for="password">Password</label>
-            <input type="password" id="password" name="password" :value="formValues.password" @change="updateFormValues" :disabled="disableForm" />
+            <input
+              type="password"
+              id="password-input"
+              name="password"
+              :value="formValues.password"
+              @change="updateFormValues"
+              :disabled="disableForm" />
           </div>
           <button class="submit-button" type="submit" :disabled="disableForm">Login</button>
           <button class="change-form-button" type="button" @click="showInfo = 'signup'" :disabled="disableForm">Sign Up</button>
-          <div class="errors" v-for="error in errors" :key="error.id">{{ error.message }}</div>
+          <!-- <div class="errors" v-for="error in errors" :key="error.id">{{ error.message }}</div> -->
         </form>
       </div>
     </div>

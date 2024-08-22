@@ -1,5 +1,6 @@
 <script setup>
-import { reactive } from 'vue'
+import { reactive, ref } from 'vue'
+import Joi from 'joi'
 
 const props = defineProps({
   countries: { type: Array, required: true },
@@ -10,6 +11,8 @@ const emit = defineEmits(['hideEditEvent'])
 const events = defineModel('events', { required: true, type: Array })
 const months = defineModel('months', { required: true, type: Array })
 
+const sendingEvent = ref(false)
+const eventResponse = reactive({ show: false, status: null, message: null })
 const errors = reactive({
   name: null,
   description: null,
@@ -38,7 +41,44 @@ async function submitEdit(e) {
   const source = e.target['source'].value
   const userId = props.eventToEdit.userId
   const _id = props.eventToEdit._id
-  console.log(name, description, dayNumber, dayIndex, month, country, holiday, source, userId, _id)
+  const buttons = e.target.querySelectorAll('button')
+
+  sendingEvent.value = true
+  buttons.forEach((button) => (button.disabled = true))
+
+  errors.name = null
+  errors.description = null
+  errors.country = null
+  errors.date = null
+  errors.holiday = null
+  errors.source = null
+
+  const schema = Joi.object({
+    name: Joi.string().required(),
+    description: Joi.string().max(150).required(),
+    country: Joi.number().min(0).max(5).required(),
+    month: Joi.number().min(0).max(11).required(),
+    dayNumber: Joi.number().min(0).max(30).required(),
+    holiday: Joi.bool().required(),
+    source: Joi.string().allow('').uri().optional(),
+    userId: Joi.string().required(),
+  })
+
+  const { error } = schema.validate({ name, description, country, month, dayNumber, holiday, source, userId }, { abortEarly: false })
+
+  if (error) {
+    console.log(error.details)
+    eventResponse.show = true
+    eventResponse.status = false
+    eventResponse.message = 'Some fields are invalid'
+    buttons.forEach((button) => (button.disabled = false))
+    sendingEvent.value = false
+
+    error.details.forEach((detail) => {
+      errors[detail.context.key] = detail.message
+    })
+    return
+  }
 
   try {
     const res = await fetch('https://calender-database.onrender.com/api/updateevent', {
@@ -64,6 +104,9 @@ async function submitEdit(e) {
     console.log(err)
   } finally {
     emit('hideEditEvent')
+    buttons.forEach((button) => (button.disabled = false))
+    sendingEvent.value = false
+
     const indexOfEvent = events.value.indexOf(props.eventToEdit)
     events.value[indexOfEvent] = {
       _id,
@@ -90,14 +133,17 @@ async function submitEdit(e) {
 }
 </script>
 <template>
-  <div id="edit-event-container">
+  <div id="edit-event-container" @click.self="emit('hideEditEvent')">
     <div id="edit-event-card">
-      <div>Ligma</div>
       <div>
         <form @submit.prevent="submitEdit">
-          <div><label for="name-input">Name</label> <input type="text" name="name-input" id="name-input" :value="eventToEdit.name" /></div>
+          <div>
+            <label for="name-input">Name</label> <input type="text" name="name-input" id="name-input" :value="eventToEdit.name" />
+            <div v-if="errors.name" class="error">{{ errors.name }}</div>
+          </div>
           <div>
             <label for="details-input">Details</label><textarea name="details-input" id="details-input" :value="eventToEdit.description"></textarea>
+            <div v-if="errors.description" class="error">{{ errors.description }}</div>
           </div>
           <div id="class-inputs">
             <input type="number" name="day" class="day" :value="eventToEdit.dayNumber" />/
@@ -106,6 +152,7 @@ async function submitEdit(e) {
                 {{ month.name }}
               </option>
             </select>
+            <div v-if="errors.date" class="error">{{ errors.date }}</div>
           </div>
           <div>
             <label for="country">Select Country: </label>
@@ -131,6 +178,12 @@ async function submitEdit(e) {
             <div v-if="errors.source" class="error">{{ errors.source }}</div>
           </div>
           <div id="buttons"><button type="submit">Save</button> <button @click.prevent="emit('hideEditEvent')">Cancel</button></div>
+          <svg v-if="sendingEvent" class="spinner" width="30px" height="30px" viewBox="0 0 66 66" xmlns="http://www.w3.org/2000/svg">
+            <circle class="path" fill="none" stroke-width="6" stroke-linecap="round" cx="33" cy="33" r="30"></circle></svg
+          ><br />
+          <div id="event-result" :class="{ error: !eventResponse.status, success: eventResponse.status }" v-if="eventResponse.show">
+            {{ eventResponse.message }}
+          </div>
         </form>
       </div>
     </div>
@@ -192,7 +245,7 @@ form > div#buttons > button {
   width: 100px;
   height: 30px;
   border-radius: 5px;
-  background-color: #007bff;
+  background-color: #4caf50;
   color: white;
   border: none;
 }

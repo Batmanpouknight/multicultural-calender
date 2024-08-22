@@ -212,12 +212,6 @@ async function addEvent(event) {
   animation: grow 0.5s forwards;
 }
 
-.error {
-  width: fit-content;
-  margin-top: 5px;
-  color: red;
-}
-
 .success {
   width: fit-content;
   margin-top: 5px;

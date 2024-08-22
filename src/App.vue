@@ -372,6 +372,12 @@ body {
   z-index: 1003;
 }
 
+.error {
+  width: fit-content;
+  margin-top: 5px;
+  color: red;
+}
+
 @keyframes stretchCalendar {
   0% {
   }
