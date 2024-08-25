@@ -1,46 +1,26 @@
 <script setup>
 import { ref, reactive, onBeforeMount, computed, watch } from 'vue'
 
+import { countries, toggleCountry } from './utils/countries.js'
+import { months, fetchMonths, isMonthLoaded } from './utils/months.js'
+import { events, fetchEvents } from './utils/events.js'
+import { user, fetchUser, loggedIn } from './utils/user.js'
+import { loadingApp } from './utils/loading'
+
 import Header from './components/AppHeader.vue'
 import AccountComp from './components/AccountComp.vue'
 import Calender from './components/CalenderInterface.vue'
 import SideBar from './components/SideBar.vue'
 import EditEvent from './components/EditEvent.vue'
 
-import Cookies from 'js-cookie'
-
-const months = ref([])
-const events = ref([])
-
-const loadingApp = ref(true)
-
-const countries = ref([
-  { id: 1, name: 'Iran', selected: true },
-  { id: 2, name: 'Canada', selected: true },
-  { id: 3, name: 'Ukraine', selected: true },
-  { id: 4, name: 'China', selected: true },
-  { id: 5, name: 'Korea', selected: true },
-  { id: 6, name: 'Indigenous', selected: true },
-])
-
 const daySelected = ref(new Date().getDate())
-
 const currentMonth = ref(new Date().getMonth())
-
-const user = reactive({
-  id: '',
-  username: '',
-  email: '',
-  type: 'anonymous',
-  events: [],
-})
-
-const loggedIn = computed(() => user.id !== '')
 
 const showAccountOverlay = ref(false)
 const tempShowSideBar = ref(false)
 const showSideBar = ref(window.innerWidth > 800)
 const mobileMode = ref(window.innerWidth < 800)
+
 const showEditEvent = ref(false)
 const eventToEdit = ref({})
 
@@ -87,11 +67,6 @@ function changeMonth(newMonth) {
 
 function changeDay(day) {
   if (day.dayIsInThisMonth) daySelected.value = day.number
-}
-
-function toggleCountry(id) {
-  const country = countries.value.find((country) => country.id === id)
-  country.selected = !country.selected
 }
 
 var firstTouch = {}
@@ -158,50 +133,6 @@ function showEditEventFunc(event) {
   showEditEvent.value = true
 }
 
-async function fetchUser() {
-  if (!Cookies.get('token')) return
-
-  try {
-    const res = await fetch('https://calender-database.onrender.com/user/updatefromserver', {
-      // const res = await fetch('http://localhost:3000/user/updatefromserver', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${Cookies.get('token')}`,
-      },
-    })
-    const data = await res.json()
-    user.id = data.result.id
-    user.email = data.result.email
-    user.username = data.result.username
-    user.type = data.result.type
-    user.events = data.result.events
-  } catch (error) {
-    console.error('Server did not respond: ', error)
-  }
-}
-
-async function fetchCalendar() {
-  try {
-    // const monthResult = await fetch('http://localhost:3000/months')
-    const monthResult = await fetch('https://calender-database.onrender.com/months')
-    months.value = await monthResult.json()
-  } catch (error) {
-    console.error('Server did not respond for months: ', error)
-  }
-  loadingApp.value = false
-}
-
-async function fetchEvents() {
-  try {
-    // const eventsResult = await fetch('http://localhost:3000/api/events')
-    const eventsResult = await fetch('https://calender-database.onrender.com/api/events')
-    events.value = await eventsResult.json()
-  } catch (error) {
-    console.error('Server did not respond to evennts: ', error)
-  }
-}
-
 onBeforeMount(async () => {
   window.addEventListener('resize', () => {
     if (window.innerWidth < 800) {
@@ -214,14 +145,14 @@ onBeforeMount(async () => {
   })
   await fetchUser()
   await fetchEvents()
-  await fetchCalendar()
+  await fetchMonths()
 })
 </script>
 <template>
-  <div id="container" v-if="months.length > 0" :style="gridArea">
+  <div id="container" v-if="isMonthLoaded" :style="gridArea">
     <div class="header">
       <Header
-        v-if="months.length > 0"
+        v-if="isMonthLoaded"
         v-model:showSideBar="showSideBar"
         :loggedIn="loggedIn"
         :months="months"

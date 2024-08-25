@@ -1,28 +1,14 @@
 <script setup>
-import { ref, reactive, watch } from 'vue'
-import Joi from 'joi'
-import bcrypt from 'bcryptjs'
-import Cookies from 'js-cookie'
+import { ref } from 'vue'
+import { formValues, updateFormValues, disableForm } from '../utils/formValues'
+import { signupSubmit, loginSubmit } from '../utils/auth'
 
 const user = defineModel('user')
 const events = defineModel('events')
 
 const emit = defineEmits(['hideAccountOverlay'])
 
-const formValues = reactive({
-  'email': '',
-  'password': '',
-  'username': '',
-  'confirm-password': '',
-})
-
 const showInfo = ref('signup')
-const errors = ref([])
-const disableForm = ref(false)
-
-function updateFormValues(e) {
-  formValues[e.target.name] = e.target.value
-}
 
 function getEventsForUser() {
   let userEvents = []
@@ -33,151 +19,6 @@ function getEventsForUser() {
   }
   return userEvents
 }
-
-async function signupSubmit() {
-  disableForm.value = true
-  const email = formValues.email
-  const username = formValues.username
-  const password = formValues.password
-  const confirmPassword = formValues['confirm-password']
-  const type = 'user'
-
-  clearErrors()
-  if (password !== confirmPassword) {
-    errors.value.push({ id: 1, message: 'Passwords do not match', location: 'password' })
-    disableForm.value = false
-  }
-  const schema = Joi.object({
-    email: Joi.string()
-      .email({ tlds: { allow: ['com', 'ca', 'net'] } })
-      .required(),
-    username: Joi.string().alphanum().min(3).max(12).required(),
-    password: Joi.string().pattern(new RegExp('^[a-zA-Z0-9!@#$*]{3,20}$')).required(),
-  })
-  const { error } = schema.validate({ email, username, password }, { abortEarly: false })
-  if (error) {
-    for (let i = 0; i < error.details.length; i++) {
-      errors.value.push({ id: i + 2, message: error.details[i].message, location: error.details[i].context.key })
-    }
-    disableForm.value = false
-  }
-
-  const hashedPassword = await bcrypt.hash(password, 15)
-
-  if (errors.value.length === 0) {
-    try {
-      const response = await fetch('https://calender-database.onrender.com/users/signup', {
-        // const response = await fetch('http://localhost:3000/users/signup', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email, username, password: hashedPassword, type }),
-      })
-      const data = await response.json()
-      if (data.error) {
-        errors.value.push({ id: data.error.code, message: data.error.message, location: data.error.location })
-        disableForm.value = false
-        return
-      }
-
-      disableForm.value = false
-      user.value.id = data.result.id
-      user.value.email = email
-      user.value.username = username
-      user.value.type = type
-      Cookies.set('token', data.result.token, { expires: 14 })
-    } catch (error) {
-      console.log(error)
-    }
-  }
-}
-
-async function loginSubmit() {
-  disableForm.value = true
-  const email = formValues.email
-  const password = formValues.password
-
-  clearErrors()
-  const schema = Joi.object({
-    email: Joi.string()
-      .email({ tlds: { allow: ['com', 'ca', 'net'] } })
-      .required(),
-    password: Joi.string().min(6).max(12).required(),
-  })
-  const { error } = schema.validate({ email, password }, { abortEarly: false })
-  if (error) {
-    console.log(error.details)
-    for (let i = 0; i < error.details.length; i++) {
-      errors.value.push({ id: i + 2, message: error.details[i].message, location: error.details[i].context.key })
-    }
-    console.log(errors.value)
-    disableForm.value = false
-  }
-  if (errors.value.length == 0) {
-    try {
-      const response = await fetch('https://calender-database.onrender.com/users/login', {
-        // const response = await fetch('http://localhost:3000/users/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email }),
-      })
-      const data = await response.json()
-      if (data.error) {
-        errors.value.push({ id: data.error.code, message: data.error.message, location: data.error.location })
-        disableForm.value = false
-        return
-      }
-
-      const userInfo = data.result
-
-      const passwordMatch = await bcrypt.compare(password, userInfo.password)
-      if (!passwordMatch) {
-        errors.value.push({ id: 401, message: 'Incorrect password', location: 'password' })
-        disableForm.value = false
-        return
-      }
-      user.value.id = userInfo.id
-      user.value.email = userInfo.email
-      user.value.username = userInfo.username
-      user.value.type = userInfo.type
-      user.value.events = userInfo.events
-      Cookies.set('token', userInfo.token, { expires: 14 })
-    } catch (error) {
-      console.log(error)
-    }
-    disableForm.value = false
-  }
-}
-
-function logout() {
-  user.value.id = ''
-  user.value.email = ''
-  user.value.username = ''
-  user.value.type = 'anonymous'
-  user.value.events = []
-  Cookies.remove('token')
-}
-
-function clearErrors() {
-  errors.value = []
-  document.querySelectorAll('.error').forEach((error) => error.remove())
-}
-
-watch(errors, () => {
-  if (errors.value.length > 0) {
-    errors.value.forEach((error) => {
-      const errorElement = document.createElement('div')
-      errorElement.classList.add('error')
-      errorElement.textContent = error.message
-      document.getElementById(error.location).appendChild(errorElement)
-    })
-  } else {
-    document.querySelectorAll('.error').forEach((error) => error.remove())
-  }
-})
 </script>
 <template>
   <div id="account-container" @click.self="emit('hideAccountOverlay')">
@@ -217,12 +58,12 @@ watch(errors, () => {
               :disabled="disableForm" />
           </div>
           <div>
-            <label for="confirm-password">Confirm Password</label>
+            <label for="confirm_password">Confirm Password</label>
             <input
               type="password"
-              id="confirm-password"
-              name="confirm-password"
-              :value="formValues['confirm-password']"
+              id="confirm_password"
+              name="confirm_password"
+              :value="formValues.confirm_password"
               @change="updateFormValues"
               :disabled="disableForm" />
           </div>
