@@ -1,142 +1,19 @@
 <script setup>
 import { reactive, ref } from 'vue'
-import Joi from 'joi'
+import { months, getOffSetOfMonth } from '@/utils/months'
+import { submitEdit, errors, eventResponse, sendingEvent } from '@/utils/events'
+import { countries } from '@/utils/countries'
+import { hideEditEventOverlay } from '@/utils/editEventOverlay'
 
 const props = defineProps({
-  countries: { type: Array, required: true },
   eventToEdit: { type: Object, required: true },
 })
-const emit = defineEmits(['hideEditEvent'])
-
-const events = defineModel('events', { required: true, type: Array })
-const months = defineModel('months', { required: true, type: Array })
-
-const sendingEvent = ref(false)
-const eventResponse = reactive({ show: false, status: null, message: null })
-const errors = reactive({
-  name: null,
-  description: null,
-  country: null,
-  date: null,
-  holiday: null,
-  source: null,
-})
-
-function getOffSetOfMonth(month) {
-  let offset = 0
-  for (let i = 0; i < 7; i++) {
-    if (!month.dates[i].dayIsInThisMonth) offset++
-  }
-  return offset - 1
-}
-
-async function submitEdit(e) {
-  const name = e.target['name-input'].value
-  const description = e.target['details-input'].value
-  const month = Number(e.target['month'].value)
-  const dayNumber = Number(e.target['day'].value)
-  const dayIndex = Number(dayNumber) + getOffSetOfMonth(months.value[month])
-  const country = Number(e.target['country'].value)
-  const holiday = e.target['holiday'].value
-  const source = e.target['source'].value
-  const userId = props.eventToEdit.userId
-  const _id = props.eventToEdit._id
-  const buttons = e.target.querySelectorAll('button')
-
-  sendingEvent.value = true
-  buttons.forEach((button) => (button.disabled = true))
-
-  errors.name = null
-  errors.description = null
-  errors.country = null
-  errors.date = null
-  errors.holiday = null
-  errors.source = null
-
-  const schema = Joi.object({
-    name: Joi.string().required(),
-    description: Joi.string().max(150).required(),
-    country: Joi.number().min(0).max(5).required(),
-    month: Joi.number().min(0).max(11).required(),
-    dayNumber: Joi.number().min(0).max(30).required(),
-    holiday: Joi.bool().required(),
-    source: Joi.string().allow('').uri().optional(),
-    userId: Joi.string().required(),
-  })
-
-  const { error } = schema.validate({ name, description, country, month, dayNumber, holiday, source, userId }, { abortEarly: false })
-
-  if (error) {
-    console.log(error.details)
-    eventResponse.show = true
-    eventResponse.status = false
-    eventResponse.message = 'Some fields are invalid'
-    buttons.forEach((button) => (button.disabled = false))
-    sendingEvent.value = false
-
-    error.details.forEach((detail) => {
-      errors[detail.context.key] = detail.message
-    })
-    return
-  }
-
-  try {
-    const res = await fetch('https://calender-database.onrender.com/api/updateevent', {
-      // const res = await fetch(`http://localhost:3000/api/updateevent`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        _id,
-        name,
-        description,
-        dayNumber,
-        dayIndex,
-        month,
-        country,
-        holiday: holiday == 'true',
-        source,
-        userId,
-      }),
-    })
-  } catch (err) {
-    console.log(err)
-  } finally {
-    emit('hideEditEvent')
-    buttons.forEach((button) => (button.disabled = false))
-    sendingEvent.value = false
-
-    const indexOfEvent = events.value.indexOf(props.eventToEdit)
-    events.value[indexOfEvent] = {
-      _id,
-      name,
-      description,
-      dayNumber,
-      dayIndex,
-      month,
-      country,
-      holiday: holiday == 'true',
-      source,
-      userId,
-    }
-    const monthBefore = props.eventToEdit.month
-    const dayIndexBefore = props.eventToEdit.dayIndex
-    const eventsBefore = months.value[monthBefore].dates[dayIndexBefore].events
-    const eventsAfter = months.value[month].dates[dayIndex].events
-    if (!(monthBefore === month && dayIndexBefore === dayIndex)) {
-      eventsBefore.splice(eventsBefore.indexOf(props.eventToEdit), 1)
-      console.log(eventsBefore)
-      eventsAfter.push(_id)
-    }
-  }
-}
 </script>
 <template>
-  <div id="edit-event-container" @click.self="emit('hideEditEvent')">
+  <div id="edit-event-container" @click.self="hideEditEventOverlay">
     <div id="edit-event-card">
       <div>
-        <form @submit.prevent="submitEdit">
+        <form @submit.prevent="submitEdit($event, eventToEdit)">
           <div>
             <label for="name-input">Name</label> <input type="text" name="name-input" id="name-input" :value="eventToEdit.name" />
             <div v-if="errors.name" class="error">{{ errors.name }}</div>
@@ -177,7 +54,7 @@ async function submitEdit(e) {
             <input type="url" name="source" id="source" :value="eventToEdit.source" />
             <div v-if="errors.source" class="error">{{ errors.source }}</div>
           </div>
-          <div id="buttons"><button type="submit">Save</button> <button @click.prevent="emit('hideEditEvent')">Cancel</button></div>
+          <div id="buttons"><button type="submit">Save</button> <button @click.prevent="hideEditEventOverlay">Cancel</button></div>
           <svg v-if="sendingEvent" class="spinner" width="30px" height="30px" viewBox="0 0 66 66" xmlns="http://www.w3.org/2000/svg">
             <circle class="path" fill="none" stroke-width="6" stroke-linecap="round" cx="33" cy="33" r="30"></circle></svg
           ><br />

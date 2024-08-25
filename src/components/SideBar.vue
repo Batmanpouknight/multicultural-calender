@@ -1,128 +1,16 @@
 <script setup>
-import { ref, reactive } from 'vue'
-import Joi from 'joi'
-
-const props = defineProps(['daySelected', 'currentMonth', 'countries', 'loggedIn', 'user'])
-const emit = defineEmits(['toggleCountry'])
-const months = defineModel('months')
-const events = defineModel('events')
-
-const errors = reactive({
-  name: null,
-  description: null,
-  country: null,
-  date: null,
-  holiday: null,
-  source: null,
-})
-
-const sendingEvent = ref(false)
-const eventResponse = reactive({ show: false, status: null, message: null })
-
-function getOffSetOfMonth(month) {
-  let offset = 0
-  for (let i = 0; i < 7; i++) {
-    if (!month.dates[i].dayIsInThisMonth) offset++
-  }
-  return offset - 1
-}
-
-async function addEvent(event) {
-  const name = event.target['name'].value
-  const description = event.target['description'].value
-  const country = Number(event.target['country'].value)
-  const month = Number(event.target['month'].value)
-  const dayNumber = Number(event.target['day'].value)
-  const holiday = event.target['holiday'].value
-  const source = event.target['source'].value
-  const dayIndex = Number(dayNumber) + getOffSetOfMonth(months.value[month])
-  const button = event.target.querySelector('button')
-  const userId = props.user.id
-  button.disabled = true
-  sendingEvent.value = true
-
-  errors.name = null
-  errors.description = null
-  errors.country = null
-  errors.date = null
-  errors.holiday = null
-  errors.source = null
-
-  const schema = Joi.object({
-    name: Joi.string().required(),
-    description: Joi.string().max(150).required(),
-    country: Joi.number().min(0).max(5).required(),
-    month: Joi.number().min(0).max(11).required(),
-    dayNumber: Joi.number().min(0).max(30).required(),
-    holiday: Joi.bool().required(),
-    source: Joi.string().allow('').uri().optional(),
-    userId: Joi.string().required(),
-  })
-
-  const { error } = schema.validate({ name, description, country, month, dayNumber, holiday, source, userId }, { abortEarly: false })
-
-  if (error) {
-    console.log(error.details)
-    eventResponse.show = true
-    eventResponse.status = false
-    eventResponse.message = 'Some fields are invalid'
-    button.disabled = false
-    sendingEvent.value = false
-
-    error.details.forEach((detail) => {
-      errors[detail.context.key] = detail.message
-    })
-    return
-  }
-
-  try {
-    // const response = await fetch('http://localhost:3000/api/addevent', {
-    const response = await fetch('https://calender-database.onrender.com/api/addevent', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        name,
-        description,
-        country,
-        month,
-        dayNumber,
-        dayIndex,
-        holiday: holiday === 'true',
-        source,
-        userId,
-      }),
-    })
-
-    eventResponse.status = true
-    eventResponse.message = 'Success!'
-    const _id = await response.text()
-
-    events.value.push({ _id, name, description, country, month, dayNumber, dayIndex, holiday: holiday == 'true', source, userId })
-    months.value[month].dates[dayIndex].events.push(_id)
-
-    event.target['name'].value = ''
-    event.target['description'].value = ''
-    event.target['country'].value = 'default'
-    event.target['source'].value = ''
-    event.target['holiday'].value = 'default'
-  } catch (error) {
-    console.error(error)
-    eventResponse.status = false
-    eventResponse.message = 'Something went wrong. Please try again later.'
-  }
-  button.disabled = false
-  sendingEvent.value = false
-  eventResponse.show = true
-}
+import { errors, addEvent, eventResponse, sendingEvent } from '@/utils/events'
+import { currentDay, currentMonth } from '@/utils/currentDay'
+import { months } from '@/utils/months'
+import { countries, toggleCountry } from '@/utils/countries'
+import { loggedIn } from '@/utils/user'
 </script>
 
 <template>
   <div class="container">
     <div id="countries">
       Countries:
-      <div v-for="country in countries" :key="country.id" class="country" @click="emit('toggleCountry', country.id)">
+      <div v-for="country in countries" :key="country.id" class="country" @click="toggleCountry(country.id)">
         <input type="checkbox" :name="country.name" :value="country.name" :checked="country.selected" />
         <label :for="country.name">
           {{ country.name }}
@@ -140,9 +28,9 @@ async function addEvent(event) {
 
         <div>
           <div>
-            <input type="number" name="day" class="day" :value="daySelected" />/
+            <input type="number" name="day" class="day" :value="currentDay" />/
             <select name="month" class="month">
-              <option v-for="(month, index) in months" :key="index" :value="index" :selected="index == props.currentMonth">
+              <option v-for="(month, index) in months" :key="index" :value="index" :selected="index == currentMonth">
                 {{ month.name }}
               </option>
             </select>

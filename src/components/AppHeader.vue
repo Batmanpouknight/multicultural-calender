@@ -1,7 +1,8 @@
 <script setup>
 import { ref, computed } from 'vue'
-
-const props = defineProps(['months', 'currentMonth', 'loggedIn'])
+import { loggedIn } from '@/utils/user'
+import { months, currnetMonthObject } from '@/utils/months'
+import { currentMonth } from '@/utils/currentDay'
 
 const emit = defineEmits(['changeMonth', 'showAccountOverlay'])
 
@@ -9,16 +10,8 @@ const showSideBar = defineModel('showSideBar')
 
 const showMonthDropdown = ref(false)
 
-/**
- * returns the month object based on the current month
- * @returns {object} the month object
- */
-const currnetMonthObject = computed(() => {
-  return props.months[props.currentMonth]
-})
-
 function changeMonthButton(direction) {
-  emit('changeMonth', props.currentMonth + direction)
+  emit('changeMonth', currentMonth.value + direction)
 }
 
 function changeMonth(month) {

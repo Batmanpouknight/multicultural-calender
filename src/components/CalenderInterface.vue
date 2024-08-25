@@ -1,46 +1,29 @@
 <script setup>
 import { computed, ref, onMounted, reactive } from 'vue'
+import { deleteEvent, getEventsForADay } from '../utils/events'
+import { currnetMonthObject, getDayObject } from '../utils/months'
+import { countries } from '@/utils/countries'
+import {
+  showEventDetailsOverlay,
+  eventDetailsLocation,
+  showEventDetailsForDay,
+  showEventDetails,
+  isThisUserEvent,
+} from '../utils/eventDetailsOverlay'
+import { changeDay, currentDay } from '../utils/currentDay'
 
-const props = defineProps(['months', 'daySelected', 'currentMonth', 'countries', 'user'])
-const emit = defineEmits(['changeDay', 'editEvent'])
-
-const events = defineModel('events')
+const emit = defineEmits(['editEvent'])
 
 const dayFullStrings = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
 const dayShortStrings = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 
 const days = ref(window.innerWidth < 800 ? dayShortStrings : dayFullStrings)
 
-const showOverlay = ref(false)
-
-const showEventDetailsForDay = ref(new Date().getDate())
-
-const eventDetailsLocation = reactive({ top: 0, left: 0 })
-
 /**
  * returns the height of the items in the calender grid
  * @returns {number} the height of the items
  */
-const itemHeight = computed(() => {
-  return 100 / getCurrnetMonthObject.value.rows
-})
-
-/**
- * returns the month object based on the current month
- * @returns {object} the month object
- */
-const getCurrnetMonthObject = computed(() => {
-  return props.months[props.currentMonth]
-})
-
-/**
- * returns the day object based on the index in the table
- * @param {number} index in the table
- * @returns {object} the day object
- */
-function getDayObject(index) {
-  return getCurrnetMonthObject.value.dates[index]
-}
+const itemHeight = computed(() => 100 / currnetMonthObject.value.rows)
 
 /**
  * returns if the day is selected
@@ -48,63 +31,12 @@ function getDayObject(index) {
  * @returns {boolean} if the day is selected
  */
 function isSelected(index) {
-  return getCurrnetMonthObject.value.dates[index].number === props.daySelected && getCurrnetMonthObject.value.dates[index].dayIsInThisMonth
-}
-
-/**
- * returns the events for a specific day based on the filetered countries
- * @param {number} day the day to get the events for
- * @returns {array} the events for the day
- */
-function getEventsForADay(index) {
-  let filteredEvents = []
-  let dayInfo = getCurrnetMonthObject.value.dates[index]
-  for (let i = 0; i < dayInfo.events.length; i++) {
-    const event = events.value.find((e) => e._id === dayInfo.events[i])
-    if (event && props.countries[event.country].selected) {
-      filteredEvents.push(event)
-    }
-  }
-  return filteredEvents
-}
-
-function showEventDetails(event, e) {
-  showOverlay.value = true
-  showEventDetailsForDay.value = event
-  eventDetailsLocation.top = Number((e.y / window.innerHeight) * 100) + '%'
-  eventDetailsLocation.left = Number((e.x / window.innerWidth) * 100) + '%'
-  if (e.x > window.innerWidth / 2) {
-    eventDetailsLocation.left = Number((e.x / window.innerWidth) * 100 - 20) + '%'
-  }
-  if (e.y > window.innerHeight / 2) {
-    eventDetailsLocation.top = Number((e.y / window.innerHeight) * 100 - 20) + '%'
-  }
-}
-
-const isThisUserEvent = computed(() => {
-  return props.user.id === showEventDetailsForDay.value.userId
-})
-
-function deleteEvent() {
-  try {
-    const res = fetch('https://calender-database.onrender.com/api/removeevent', {
-      // const res = fetch('http://localhost:3000/api/removeevent', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ id: showEventDetailsForDay.value._id }),
-    })
-    events.value = events.value.filter((e) => e._id !== showEventDetailsForDay.value._id)
-    showOverlay.value = false
-  } catch (error) {
-    console.error(error)
-  }
+  return currnetMonthObject.value.dates[index].number === currentDay.value && currnetMonthObject.value.dates[index].dayIsInThisMonth
 }
 
 function showEditEvent(event) {
   emit('editEvent', event)
-  showOverlay.value = false
+  showEventDetailsOverlay.value = false
 }
 
 onMounted(() => {
@@ -115,9 +47,9 @@ onMounted(() => {
 </script>
 
 <template>
-  <div id="calender-grid" :style="{ 'grid-template-rows': `repeat(${getCurrnetMonthObject.rows}, ${itemHeight}%)` }">
+  <div id="calender-grid" :style="{ 'grid-template-rows': `repeat(${currnetMonthObject.rows}, ${itemHeight}%)` }">
     <div
-      v-for="(n, index) in 7 * getCurrnetMonthObject.rows"
+      v-for="(n, index) in 7 * currnetMonthObject.rows"
       :key="n"
       class="calender-item"
       :class="{
@@ -125,7 +57,7 @@ onMounted(() => {
         notThisMonth: !getDayObject(index).dayIsInThisMonth,
         selected: isSelected(index),
       }"
-      @click.self="emit('changeDay', getDayObject(index))">
+      @click.self="changeDay(getDayObject(index))">
       <div v-if="index < 7">{{ days[index] }}</div>
       {{ getDayObject(index).number }}
       <div
@@ -139,16 +71,16 @@ onMounted(() => {
     </div>
   </div>
 
-  <div class="overlay" @click.self="showOverlay = false" v-if="showOverlay">
+  <div class="overlay" @click.self="showEventDetailsOverlay = false" v-if="showEventDetailsOverlay">
     <div class="event-details" :style="eventDetailsLocation">
-      <div class="x-button" @click="showOverlay = false">x</div>
+      <div class="x-button" @click="showEventDetailsOverlay = false">x</div>
       <div class="event-info">
         <div>name: {{ showEventDetailsForDay.name }}</div>
-        <div>country: {{ props.countries[showEventDetailsForDay.country].name }}</div>
+        <div>country: {{ countries[showEventDetailsForDay.country].name }}</div>
         <div>description: {{ showEventDetailsForDay.description }}</div>
         <div v-if="showEventDetailsForDay.source"><a :href="showEventDetailsForDay.source" target="_blank">Source</a></div>
         <div v-if="isThisUserEvent">
-          <button @click="deleteEvent()">Delete</button><button @click="showEditEvent(showEventDetailsForDay)">Edit</button>
+          <button @click="deleteEvent(showEventDetailsForDay._id)">Delete</button><button @click="showEditEvent(showEventDetailsForDay)">Edit</button>
         </div>
       </div>
     </div>

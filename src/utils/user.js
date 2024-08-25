@@ -1,10 +1,6 @@
 import { reactive, computed } from 'vue'
 import { link } from './link.js'
-import { formValues, disableForm } from '../utils/formValues'
-import { errors, clearErrors } from '../utils/formErrors.js'
 import Cookies from 'js-cookie'
-import Joi from 'joi'
-import bcrypt from 'bcryptjs'
 
 export const user = reactive({
   id: '',

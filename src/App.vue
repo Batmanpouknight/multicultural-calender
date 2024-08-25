@@ -1,11 +1,12 @@
 <script setup>
 import { ref, reactive, onBeforeMount, computed, watch } from 'vue'
 
-import { countries, toggleCountry } from './utils/countries.js'
-import { months, fetchMonths, isMonthLoaded } from './utils/months.js'
-import { events, fetchEvents } from './utils/events.js'
-import { user, fetchUser, loggedIn } from './utils/user.js'
+import { fetchMonths, isMonthLoaded } from './utils/months'
+import { events, fetchEvents } from './utils/events'
+import { user, fetchUser, loggedIn } from './utils/user'
+import { currentMonth, currentDay } from './utils/currentDay'
 import { loadingApp } from './utils/loading'
+import { showEditEvent, eventToEdit } from './utils/editEventOverlay'
 
 import Header from './components/AppHeader.vue'
 import AccountComp from './components/AccountComp.vue'
@@ -13,16 +14,10 @@ import Calender from './components/CalenderInterface.vue'
 import SideBar from './components/SideBar.vue'
 import EditEvent from './components/EditEvent.vue'
 
-const daySelected = ref(new Date().getDate())
-const currentMonth = ref(new Date().getMonth())
-
 const showAccountOverlay = ref(false)
 const tempShowSideBar = ref(false)
 const showSideBar = ref(window.innerWidth > 800)
 const mobileMode = ref(window.innerWidth < 800)
-
-const showEditEvent = ref(false)
-const eventToEdit = ref({})
 
 const calenderStyle = reactive({})
 
@@ -61,12 +56,8 @@ function changeMonth(newMonth) {
   else if (newMonth > 11) newMonth = 0
   currentMonth.value = newMonth
 
-  if (newMonth == new Date().getMonth()) daySelected.value = new Date().getDate()
-  else daySelected.value = 1
-}
-
-function changeDay(day) {
-  if (day.dayIsInThisMonth) daySelected.value = day.number
+  if (newMonth == new Date().getMonth()) currentDay.value = new Date().getDate()
+  else currentDay.value = 1
 }
 
 var firstTouch = {}
@@ -151,14 +142,7 @@ onBeforeMount(async () => {
 <template>
   <div id="container" v-if="isMonthLoaded" :style="gridArea">
     <div class="header">
-      <Header
-        v-if="isMonthLoaded"
-        v-model:showSideBar="showSideBar"
-        :loggedIn="loggedIn"
-        :months="months"
-        :currentMonth="currentMonth"
-        @changeMonth="changeMonth"
-        @showAccountOverlay="showAccountOverlay = true" />
+      <Header v-model:showSideBar="showSideBar" @changeMonth="changeMonth" @showAccountOverlay="showAccountOverlay = true" />
     </div>
 
     <div
@@ -169,37 +153,16 @@ onBeforeMount(async () => {
       @touchmove="handleCalendarTouch"
       @touchend="handleCalendarTouch"
       @touchcancel="handleCalendarTouch">
-      <Calender
-        v-model:events="events"
-        :months="months"
-        :daySelected="daySelected"
-        :currentMonth="currentMonth"
-        :countries="countries"
-        :user="user"
-        @changeDay="changeDay"
-        @editEvent="showEditEventFunc" />
+      <Calender @editEvent="showEditEventFunc" />
     </div>
     <div class="create-event" :class="animateSideBar" v-show="showSideBar || tempShowSideBar">
-      <SideBar
-        v-model:events="events"
-        :months="months"
-        :daySelected="daySelected"
-        :currentMonth="currentMonth"
-        :countries="countries"
-        :loggedIn="loggedIn"
-        :user="user"
-        @toggleCountry="toggleCountry" />
+      <SideBar />
     </div>
     <div class="account-overlay" v-if="showAccountOverlay">
       <AccountComp v-model:user="user" v-model:events="events" @hideAccountOverlay="showAccountOverlay = false" />
     </div>
     <div id="edit-event" v-if="showEditEvent">
-      <EditEvent
-        v-model:events="events"
-        v-model:months="months"
-        :countries="countries"
-        :eventToEdit="eventToEdit"
-        @hideEditEvent="showEditEvent = false" />
+      <EditEvent :eventToEdit="eventToEdit" />
     </div>
   </div>
   <div id="loading" v-else-if="loadingApp">

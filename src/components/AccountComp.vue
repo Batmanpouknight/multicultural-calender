@@ -1,7 +1,7 @@
 <script setup>
 import { ref } from 'vue'
 import { formValues, updateFormValues, disableForm } from '../utils/formValues'
-import { signupSubmit, loginSubmit } from '../utils/auth'
+import { signupSubmit, loginSubmit, logout } from '../utils/auth'
 
 const user = defineModel('user')
 const events = defineModel('events')
@@ -57,11 +57,11 @@ function getEventsForUser() {
               @change="updateFormValues"
               :disabled="disableForm" />
           </div>
-          <div>
+          <div id="confirm_password">
             <label for="confirm_password">Confirm Password</label>
             <input
               type="password"
-              id="confirm_password"
+              id="confirm_password-input"
               name="confirm_password"
               :value="formValues.confirm_password"
               @change="updateFormValues"

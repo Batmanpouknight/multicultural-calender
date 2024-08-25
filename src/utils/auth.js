@@ -4,7 +4,6 @@ import { formValues, disableForm } from '../utils/formValues'
 import { errors, clearErrors } from '../utils/formErrors.js'
 import Cookies from 'js-cookie'
 import Joi from 'joi'
-import bcrypt from 'bcryptjs'
 
 export async function signupSubmit() {
   disableForm.value = true
@@ -12,26 +11,23 @@ export async function signupSubmit() {
   const type = 'user'
 
   clearErrors()
-  if (password !== confirm_password) {
-    errors.value.push({ id: 1, message: 'Passwords do not match', location: 'password' })
-    disableForm.value = false
-  }
+
   const schema = Joi.object({
     email: Joi.string()
       .email({ tlds: { allow: ['com', 'ca', 'net'] } })
       .required(),
     username: Joi.string().alphanum().min(3).max(12).required(),
-    password: Joi.string().pattern(new RegExp('^[a-zA-Z0-9!@#$*]{3,20}$')).required(),
+    password: Joi.string().pattern(new RegExp('^[a-zA-Z0-9!@#$*]{6,20}$')).required(),
+    confirm_password: Joi.valid(Joi.ref('password')).required(),
   })
-  const { error } = schema.validate({ email, username, password }, { abortEarly: false })
+  const { error } = schema.validate({ email, username, password, confirm_password }, { abortEarly: false })
   if (error) {
+    console.log(error)
     for (let i = 0; i < error.details.length; i++) {
       errors.value.push({ id: i + 2, message: error.details[i].message, location: error.details[i].context.key })
     }
     disableForm.value = false
   }
-
-  const hashedPassword = await bcrypt.hash(password, 15)
 
   if (errors.value.length === 0) {
     try {
@@ -40,7 +36,7 @@ export async function signupSubmit() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ email, username, password: hashedPassword, type }),
+        body: JSON.stringify({ email, username, password, type }),
       })
       const data = await response.json()
       if (data.error) {
@@ -50,10 +46,10 @@ export async function signupSubmit() {
       }
 
       disableForm.value = false
-      user.value.id = data.result.id
-      user.value.email = email
-      user.value.username = username
-      user.value.type = type
+      user.id = data.result.id
+      user.email = email
+      user.username = username
+      user.type = type
       Cookies.set('token', data.result.token, { expires: 14 })
     } catch (error) {
       console.log(error)
@@ -86,7 +82,7 @@ export async function loginSubmit() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ email }),
+        body: JSON.stringify({ email, password }),
       })
       const data = await response.json()
       if (data.error) {
@@ -97,17 +93,11 @@ export async function loginSubmit() {
 
       const userInfo = data.result
 
-      const passwordMatch = await bcrypt.compare(password, userInfo.password)
-      if (!passwordMatch) {
-        errors.value.push({ id: 401, message: 'Incorrect password', location: 'password' })
-        disableForm.value = false
-        return
-      }
-      user.value.id = userInfo.id
-      user.value.email = userInfo.email
-      user.value.username = userInfo.username
-      user.value.type = userInfo.type
-      user.value.events = userInfo.events
+      user.id = userInfo.id
+      user.email = userInfo.email
+      user.username = userInfo.username
+      user.type = userInfo.type
+      user.events = userInfo.events
       Cookies.set('token', userInfo.token, { expires: 14 })
     } catch (error) {
       console.log(error)
@@ -117,10 +107,10 @@ export async function loginSubmit() {
 }
 
 export function logout() {
-  user.value.id = ''
-  user.value.email = ''
-  user.value.username = ''
-  user.value.type = 'anonymous'
-  user.value.events = []
+  user.id = ''
+  user.email = ''
+  user.username = ''
+  user.type = 'anonymous'
+  user.events = []
   Cookies.remove('token')
 }
