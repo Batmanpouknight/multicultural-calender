@@ -10,6 +10,7 @@ import {
   showEventDetails,
   isThisUserEvent,
 } from '../utils/eventDetailsOverlay'
+import { showEditEventOverlay } from '@/utils/editEventOverlay'
 import { changeDay, currentDay } from '../utils/currentDay'
 
 const emit = defineEmits(['editEvent'])
@@ -32,11 +33,6 @@ const itemHeight = computed(() => 100 / currnetMonthObject.value.rows)
  */
 function isSelected(index) {
   return currnetMonthObject.value.dates[index].number === currentDay.value && currnetMonthObject.value.dates[index].dayIsInThisMonth
-}
-
-function showEditEvent(event) {
-  emit('editEvent', event)
-  showEventDetailsOverlay.value = false
 }
 
 onMounted(() => {
@@ -80,7 +76,8 @@ onMounted(() => {
         <div>description: {{ showEventDetailsForDay.description }}</div>
         <div v-if="showEventDetailsForDay.source"><a :href="showEventDetailsForDay.source" target="_blank">Source</a></div>
         <div v-if="isThisUserEvent">
-          <button @click="deleteEvent(showEventDetailsForDay._id)">Delete</button><button @click="showEditEvent(showEventDetailsForDay)">Edit</button>
+          <button @click="deleteEvent(showEventDetailsForDay._id)">Delete</button
+          ><button @click="showEditEventOverlay(showEventDetailsForDay)">Edit</button>
         </div>
       </div>
     </div>

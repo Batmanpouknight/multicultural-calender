@@ -1,13 +1,8 @@
 <script setup>
-import { reactive, ref } from 'vue'
-import { months, getOffSetOfMonth } from '@/utils/months'
+import { months } from '@/utils/months'
 import { submitEdit, errors, eventResponse, sendingEvent } from '@/utils/events'
 import { countries } from '@/utils/countries'
-import { hideEditEventOverlay } from '@/utils/editEventOverlay'
-
-const props = defineProps({
-  eventToEdit: { type: Object, required: true },
-})
+import { eventToEdit, hideEditEventOverlay } from '@/utils/editEventOverlay'
 </script>
 <template>
   <div id="edit-event-container" @click.self="hideEditEventOverlay">
