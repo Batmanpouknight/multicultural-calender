@@ -1,35 +1,66 @@
-# multicultural-calender
+# 🗓️ Multicultural Calendar
 
-This template should help get you started developing with Vue 3 in Vite.
+## Overview
 
-## Recommended IDE Setup
+Multicultural Calendar is a web application that displays national holidays, cultural celebrations, and important events for multiple countries. This project aims to provide users with a simple and intuitive interface where they can select a country and view upcoming public holidays, religious events, and major festivities.
 
-[VSCode](https://code.visualstudio.com/) + [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur).
+This repository contains the client-side application, which is built using Vue.js and powered by Vite for a fast, modern development experience. The backend API is available in a [separate repository](https://github.com/Batmanpouknight/calender-database).
 
-## Customize configuration
+## 🛠️ Technology Used
 
-See [Vite Configuration Reference](https://vitejs.dev/config/).
+### Client-Side(This Repository)
 
-## Project Setup
+- Frontend
 
-```sh
-npm install
-```
+  - Vue.js + vite
+  - CSS
+  - Custom Calendar API for holiday data (hosted in the backend)
 
-### Compile and Hot-Reload for Development
+- Back-end ([separate repository](https://github.com/Batmanpouknight/calender-database)):
 
-```sh
-npm run dev
-```
+  - Node.js
+    - Express
+    - DotENV
+    - Joi
+  - Mongodb
 
-### Compile and Minify for Production
+- Depolymnet
+  - Netlify for the songle page application
+  - Render for backend
 
-```sh
-npm run build
-```
+## Installation
 
-### Lint with [ESLint](https://eslint.org/)
+1. Clone this repository:
 
-```sh
-npm run lint
-```
+   ```sh
+   git clone https://github.com/Batmanpouknight/multicultural-calender.git
+   cd multicultural-calender
+   ```
+
+2. Install dependencies:
+
+   ```sh
+   npm install
+   ```
+
+3. Run the app locally using Vite:
+
+   ```sh
+   npm run dev
+   ```
+
+## 🌍 Supported Countries
+
+- Canada
+- China
+- Korea
+- Iran
+- Native American
+- Ukraine
+
+## Contact Info
+
+If you have any questions or feedback feel free to reach out to me:
+
+- Email: pouyannorouzii@gmail.com
+- LinkedIn [Pouyan Norouzi](https://www.linkedin.com/in/pouyan-norouzi/)
