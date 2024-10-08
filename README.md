@@ -43,7 +43,7 @@ This repository contains the client-side application, which is built using Vue.j
    npm install
    ```
 
-3. Run the app locally using Vite:
+3. Run the app locally using Vite :
 
    ```sh
    npm run dev
